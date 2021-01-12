@@ -1,5 +1,4 @@
 import math
-from f_const.directions import Directions
 
 
 class Point:
@@ -186,11 +185,10 @@ class Point:
         """
         d = Point.direction(p1, p2)
         if d >= 315 or d <= 45:
-            return Directions.UP
+            return 'UP'
         if 45 <= d <= 135:
-            return Directions.RIGHT
+            return 'RIGHT'
         if 135 <= d <= 225:
-            return Directions.DOWN
+            return 'DOWN'
         if 225 <= d <= 315:
-            return Directions.LEFT
-
+            return 'LEFT'

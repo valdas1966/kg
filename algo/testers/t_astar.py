@@ -1,7 +1,7 @@
 from f_utils import u_tester
 from f_utils import u_random
-from from model.point import Point
-from from model.grid_blocks import GridBlocks
+from model.point import Point
+from model.grid_blocks import GridBlocks
 from algo.astar import AStar
 from logic.grid_blocks_ghf import LogicGridBlocksGHF
 

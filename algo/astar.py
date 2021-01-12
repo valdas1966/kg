@@ -1,7 +1,7 @@
-from from model.point import Point
-from from model.point_node import Node
-from from model.grid_blocks import GridBlocks
-from from model.opened import Opened
+from model.point import Point
+from model.point_node import Node
+from model.grid_blocks import GridBlocks
+from model.opened import Opened
 
 
 class AStar:
