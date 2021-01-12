@@ -1,6 +1,6 @@
 from f_utils import u_tester
-from proj.ai.model.grid_blocks import GridBlocks
-from proj.ai.model.grid_blocks_roomap import GridBlocksRooMap
+from model.grid_blocks import GridBlocks
+from model.grid_blocks_roomap import GridBlocksRooMap
 
 
 class TestGridBlocksRooMap:

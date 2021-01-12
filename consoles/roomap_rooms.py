@@ -1,6 +1,6 @@
 from f_utils import u_pickle
-from proj.ai.model.point import Point
-from proj.ai.logic.point_distance import LogicPointDistance as logic
+from model.point import Point
+logic.point_distance import LogicPointDistance as logic
 
 
 dir_results = 'D:\\Exp_RooMap\\'

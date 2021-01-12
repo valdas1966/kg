@@ -1,6 +1,6 @@
 from f_utils import u_pickle
 from f_utils.c_timer import Timer
-from proj.ai.logic.grid_blocks_ghf import LogicGridBlocksGHF as logic
+logic.grid_blocks_ghf import LogicGridBlocksGHF as logic
 
 
 dir_results = 'D:\\Exp_RooMap\\'

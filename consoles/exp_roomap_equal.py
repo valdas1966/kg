@@ -3,11 +3,11 @@ import random
 from f_utils import u_file
 from f_utils import u_pickle
 from f_utils.c_timer import Timer
-from proj.ai.model.grid_blocks_roomap import GridBlocksRooMap
-from proj.ai.algo.kastar_projection import KAStarProjection
-from proj.ai.algo.kastar_backward import KAStarBackward
-from proj.ai.algo.kastar_bi import KAStarBi
-from proj.ai.logic.point_distance import LogicPointDistance as logic
+from model.grid_blocks_roomap import GridBlocksRooMap
+algo.kastar_projection import KAStarProjection
+algo.kastar_backward import KAStarBackward
+algo.kastar_bi import KAStarBi
+logic.point_distance import LogicPointDistance as logic
 
 
 dir_results = 'D:\\Exp_RooMap_Equal\\'

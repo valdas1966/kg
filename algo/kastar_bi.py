@@ -1,6 +1,6 @@
 from collections import Counter
-from model.point import Point
-from model.grid import Grid
+from from model.point import Point
+from from model.grid import Grid
 from algo.astar_lookup import AStarLookup
 from algo.kastar_backward import KAStarBackward
 from logic.point_distance import LogicPointDistance as logic

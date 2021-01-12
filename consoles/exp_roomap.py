@@ -1,10 +1,10 @@
 from f_utils import u_file
 from f_utils import u_pickle
 from f_utils.c_timer import Timer
-from proj.ai.model.grid_blocks_roomap import GridBlocksRooMap
-from proj.ai.algo.kastar_projection import KAStarProjection
-from proj.ai.algo.kastar_backward import KAStarBackward
-from proj.ai.algo.kastar_bi import KAStarBi
+from model.grid_blocks_roomap import GridBlocksRooMap
+algo.kastar_projection import KAStarProjection
+algo.kastar_backward import KAStarBackward
+algo.kastar_bi import KAStarBi
 
 
 dir_results = 'D:\\Exp_RooMap\\10\\'

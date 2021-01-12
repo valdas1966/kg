@@ -1,8 +1,8 @@
 import random
 from f_utils import u_pickle
-from proj.ai.model.point import Point
-from proj.ai.model.grid_blocks import GridBlocks
-from proj.ai.algo.astar import AStar
+from model.point import Point
+from model.grid_blocks import GridBlocks
+algo.astar import AStar
 
 pickle_grids = 'D:\\Exp_RooMap\\grids.pickle'
 csv_random = 'D:\\Exp\\Symmetry_Random_512x512.csv'

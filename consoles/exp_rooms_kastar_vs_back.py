@@ -2,11 +2,11 @@ import random
 from f_utils import u_random
 from f_utils import u_pickle
 from f_utils import u_dict
-from proj.ai.model.point import Point
-from proj.ai.model.grid_blocks_birooms import GridBlocksRooms
-from proj.ai.algo.kastar_projection import KAStarProjection
-from proj.ai.algo.astar_lookup import AStarLookup
-from proj.ai.logic.point_distance import LogicPointDistance as lpd
+from model.point import Point
+from model.grid_blocks_birooms import GridBlocksRooms
+algo.kastar_projection import KAStarProjection
+algo.astar_lookup import AStarLookup
+logic.point_distance import LogicPointDistance as lpd
 
 
 dir_storage = 'G:\\Study\\Thesis\\Roni\\Rooms\\'
@@ -210,7 +210,7 @@ forwards = u_pickle.load(pickle_forward)
 kastar = forwards[76][45]
 print(len(kastar.closed))
 
-from proj.ai.algo.kastar_projection import KAStarProjection
+algo.kastar_projection import KAStarProjection
 
 kastar = KAStarProjection(grid, start, goals)
 kastar.run()

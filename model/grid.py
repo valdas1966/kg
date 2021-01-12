@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from proj.ai.model.point import Point
+from model.point import Point
 
 
 class Grid:

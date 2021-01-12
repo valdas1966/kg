@@ -1,6 +1,6 @@
 import numpy as np
-from proj.ai.model.point import Point
-from proj.ai.model.grid_blocks import GridBlocks
+from model.point import Point
+from model.grid_blocks import GridBlocks
 
 
 class GridBlocksRooMap(GridBlocks):

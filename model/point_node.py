@@ -1,4 +1,4 @@
-from proj.ai.model.point import Point
+from model.point import Point
 
 
 class Node(Point):

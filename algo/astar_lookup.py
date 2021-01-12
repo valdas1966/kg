@@ -1,5 +1,5 @@
-from model.point import Point
-from model.point_node import Node
+from from model.point import Point
+from from model.point_node import Node
 from algo.astar import AStar
 
 

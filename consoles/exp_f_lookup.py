@@ -1,6 +1,6 @@
-from proj.ai.model.point import Point
-from proj.ai.model.grid_blocks import GridBlocks
-from proj.ai.algo.astar_lookup_early import AStarLookupEarly
+from model.point import Point
+from model.grid_blocks import GridBlocks
+algo.astar_lookup_early import AStarLookupEarly
 from f_utils import u_pickle
 from f_excel.c_excel_map import ExcelMap
 from f_utils import u_file

@@ -1,8 +1,8 @@
 from f_utils import u_tester
-from proj.ai.model.point import Point
-from proj.ai.model.point_node import Node
-from proj.ai.model.grid_blocks import GridBlocks
-from proj.ai.logic.grid_blocks_ghf import LogicGridBlocksGHF
+from model.point import Point
+from model.point_node import Node
+from model.grid_blocks import GridBlocks
+logic.grid_blocks_ghf import LogicGridBlocksGHF
 
 
 class TestLogicGridBlocksGHF:

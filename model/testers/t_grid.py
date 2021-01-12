@@ -1,6 +1,6 @@
 from f_utils import u_tester
-from proj.ai.model.grid import Grid
-from proj.ai.model.point import Point
+from model.grid import Grid
+from model.point import Point
 
 
 class TestModelGrid:

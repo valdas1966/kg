@@ -1,6 +1,6 @@
-from proj.ai.model.grid_blocks import GridBlocks
-from proj.ai.model.point import Point
-from proj.ai.model.point_node import Node
+from model.grid_blocks import GridBlocks
+from model.point import Point
+from model.point_node import Node
 from f_utils import u_set
 import collections
 

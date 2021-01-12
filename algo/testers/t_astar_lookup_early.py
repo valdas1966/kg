@@ -1,7 +1,7 @@
 from f_utils import u_tester
-from proj.ai.model.point import Point
-from proj.ai.model.grid_blocks import GridBlocks
-from proj.ai.algo.astar_lookup_early import AStarLookupEarly
+from model.point import Point
+from model.grid_blocks import GridBlocks
+algo.astar_lookup_early import AStarLookupEarly
 
 
 class TestAStarLookupEarly:

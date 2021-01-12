@@ -1,4 +1,4 @@
-from model.point_node import Node
+from from model.point_node import Node
 from algo.astar_lookup import AStarLookup
 
 

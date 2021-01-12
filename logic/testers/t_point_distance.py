@@ -1,6 +1,6 @@
 from f_utils import u_tester
-from proj.ai.model.point import Point
-from proj.ai.logic.point_distance import LogicPointDistance
+from model.point import Point
+logic.point_distance import LogicPointDistance
 
 
 class TestLogicPointDistance:

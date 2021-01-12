@@ -1,7 +1,7 @@
 from f_utils import u_tester
-from proj.ai.model.point import Point
-from proj.ai.model.grid_blocks import GridBlocks
-from proj.ai.algo.kastar_bi import KAStarBi
+from model.point import Point
+from model.grid_blocks import GridBlocks
+algo.kastar_bi import KAStarBi
 
 
 class TestKAStarBi:

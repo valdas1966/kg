@@ -1,6 +1,6 @@
-from model.point import Point
-from model.grid_blocks import GridBlocks
-from model.opened import Opened
+from from model.point import Point
+from from model.grid_blocks import GridBlocks
+from from model.opened import Opened
 from logic.point_distance import LogicPointDistance
 from algo.astar import AStar
 
