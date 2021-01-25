@@ -1,49 +1,68 @@
-import random
-from collections import defaultdict
-from algo.astar import AStar
+from model.point import Point
+from f_utils import u_dict
 
 
-def random_pairs_by_distance(grid, amount, size=1):
+def nearest(point_a, points_b):
     """
-    ============================================================================
-     Description: Return Dictionary with Pair of Points by their Distances.
-    ============================================================================
+    ========================================================================
+     Description: Return Dict of Points ordered by nearest distance
+                    to the Point-A.
+    ========================================================================
      Arguments:
-    ----------------------------------------------------------------------------
-        1. grid : GridBlocks
-        2. amount : int (Amount of Pairs)
-        3. size : int (Size to Round the Distances)
-    ============================================================================
-     Return: dict {int -> list of tuple (Point_1, Point_2)}.
-    ============================================================================
+    ------------------------------------------------------------------------
+        1. point_a : Point
+        2. point_b : Set of Points
+    ========================================================================
+     Return: Dict {Point (Point B) -> int (Manhattan Distance to Point A).
+    ========================================================================
     """
-    pairs = defaultdict(list)
-    points = grid.points
-    for i in range(amount):
-        random.shuffle(points)
-        point_a, point_b = points[:2]
-        distance = point_a.distance(point_b)
-        if size > 1:
-            distance = (distance // size) * size
-            pairs[distance].append((point_a, point_b))
-    return pairs
+    assert type(point_a) == Point, f'type(point_a)={type(point_a)}'
+    assert type(points_b) in [tuple, list, set], f'type=(points_b)=' \
+                                                 f'{type(points_b)}'
+    dict_points = dict()
+    for point_b in set(points_b):
+        dict_points[point_b] = point_a.distance(point_b)
+    return u_dict.sort_by_value(dict_points)
 
 
-def is_clean_line(grid, point_a, point_b):
+def distances_to(point_a, points_b):
     """
-    ============================================================================
-     Description: Return True if there is a Clean Line between the Points
-                    (no obstacles on the airline)
-    ============================================================================
+    ========================================================================
+     Description: Return Average Distances between the Point A and Points B.
+    ========================================================================
      Arguments:
-    ----------------------------------------------------------------------------
-        1. grid : GridBlocks
-        2. point_a : Point
-        3. point_b : Point
-    ============================================================================
-     Return: bool
-    ============================================================================
+    ------------------------------------------------------------------------
+        1. point_a : Point.
+        2. points_b : Tuple | List | Set of Points.
+    ========================================================================
+     Return: int
+    ========================================================================
     """
-    astar = AStar(grid, point_a, point_b)
-    astar.run()
-    return len(astar.optimal_path()) == point_a.distance(point_b)
+    assert type(point_a) == Point
+    assert type(points_b) in [tuple, list, set]
+    points_b = set(points_b)
+    summer = 0
+    for point_b in points_b:
+        summer += point_a.distance(point_b)
+    return int(summer / len(points_b))
+
+
+def distances(points):
+    """
+    ========================================================================
+     Description: Return Average-Distance between the Points.
+    ========================================================================
+     Arguments:
+    ------------------------------------------------------------------------
+        1. points : [Tuple, List, Set] of Points
+    ========================================================================
+     Return: int
+    ========================================================================
+    """
+    assert type(points) in [tuple, list, set]
+    points = set(points)
+    res = 0
+    for point_a in points:
+        for point_b in points - {point_a}:
+            res += point_a.distance(point_b)
+    return int(res / len(points))
