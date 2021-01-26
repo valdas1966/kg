@@ -11,6 +11,7 @@ class TestGridBlocks:
         TestGridBlocks.__tester_sub_grid()
         TestGridBlocks.__tester_sub_grid_radius()
         TestGridBlocks.__tester_is_clean_line()
+        TestGridBlocks.__tester_are_clean_line()
         u_tester.print_finish(__file__)
 
     @staticmethod
@@ -50,6 +51,38 @@ class TestGridBlocks:
         p1 = not u_grid_blocks.is_clean_line(grid, point_a, point_b)
         u_tester.run(p0, p1)
 
+    @staticmethod
+    def __tester_are_clean_line():
+        grid = GridBlocks(3)
+        grid.set_block(0, 1)
+        point_a = Point(0, 0)
+        point_b = Point(2, 0)
+        point_c = Point(0, 2)
+        points = {point_a, point_b}
+        p0 = u_grid_blocks.are_clean_lines(grid, points)
+        points.add(point_c)
+        p1 = not u_grid_blocks.are_clean_lines(grid, points)
+        u_tester.run(p0, p1)
+
+    @staticmethod
+    def tester_random_pairs_by_distance():
+        grid = GridBlocks(7)
+        grid.set_block(1, 3)
+        grid.set_block(2, 3)
+        grid.set_block(3, 1)
+        grid.set_block(3, 2)
+        grid.set_block(3, 3)
+        grid.set_block(3, 4)
+        grid.set_block(3, 5)
+        grid.set_block(4, 3)
+        grid.set_block(5, 3)
+        d_pairs = u_grid_blocks.random_pairs_by_distance(grid, amount=10,
+                                                         size=2)
+        for distance in sorted(d_pairs.keys()):
+            print(distance, d_pairs[distance])
+
 
 if __name__ == '__main__':
     TestGridBlocks()
+
+# TestGridBlocks.tester_random_pairs_by_distance()

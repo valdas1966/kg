@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from collections import defaultdict
 from model.point import Point
 from model.grid_blocks import GridBlocks
@@ -109,6 +110,28 @@ def is_clean_line(grid, point_a, point_b):
     return len(astar.optimal_path()) == point_a.distance(point_b)+1
 
 
+def are_clean_lines(grid, points):
+    """
+    ============================================================================
+     Description: Return True if there are Clean-Lines between all the Points.
+    ============================================================================
+     Arguments:
+    ----------------------------------------------------------------------------
+        1. grid : GridBlocks
+        2. points : Set of Point
+    ============================================================================
+     Return: bool
+    ============================================================================
+    """
+    for p1 in points:
+        for p2 in points:
+            if p1 == p2:
+                continue
+            if not is_clean_line(grid, p1, p2):
+                return False
+    return True
+
+
 def random_pairs_by_distance(grid, amount, size=1):
     """
     ============================================================================
@@ -127,10 +150,16 @@ def random_pairs_by_distance(grid, amount, size=1):
     assert type(amount) == int
     assert type(size) == int
     pairs = defaultdict(list)
-    points = grid.points
+    points = grid.points()
     for i in range(amount):
-        random.shuffle(points)
-        point_a, point_b = points[:2]
+        j = i % len(points)
+        if not j:
+            random.shuffle(points)
+        j_first = j * 2
+        j_last = j_first + 2
+        if j_last > len(points):
+            continue
+        point_a, point_b = points[j_first:j_last]
         distance = point_a.distance(point_b)
         if size > 1:
             distance = (distance // size) * size
@@ -155,20 +184,45 @@ def random_satellites_clean_line(grid, point, radius, amount, epochs):
      Return: list of Point (empty list on fail).
     ============================================================================
     """
-    points = list()
-    for i in range(epochs):
-        points = random_points_radius(grid, point, radius, amount)
-        set_points = set(points) + {point}
-        are_clean_line = True
-        for p1 in set_points:
-            for p2 in set_points:
-                if p1 == p2:
-                    continue
-                if not is_clean_line(grid, p1, p2):
-                    are_clean_line = False
-                    break
-            if not are_clean_line:
-                break
-        if are_clean_line:
-            break
-    return points
+    assert type(grid) == GridBlocks
+    assert type(point) == Point
+    assert type(radius) == int
+    assert type(amount) == int
+    assert type(epochs) == int
+    satellites = random_points_radius(grid, point, radius, amount)
+    is_valid = are_clean_lines(grid, satellites)
+    while epochs and not is_valid:
+        satellites = random_points_radius(grid, point, radius, amount)
+        is_valid = are_clean_lines(grid, satellites)
+        epochs -= 1
+    if not is_valid:
+        return list()
+    return satellites
+
+
+def from_map(path, char_valid='.', rows_pass=4):
+    """
+    ============================================================================
+     Description: Generate GridBlocks from Map-File.
+    ============================================================================
+     Arguments:
+    ----------------------------------------------------------------------------
+        1. path : str (Path to Map-File).
+        2. char_valid : str (Char that indicates Valid-Point in the Map).
+        3. rows_pass : int (Number of First-Rows to Pass (meta-data)).
+    ============================================================================
+     Return: GridBlocks (Generated from the Map-File).
+    ============================================================================
+    """
+    rows = list()
+    file = open(path, 'r')
+    lines = file.readlines()[rows_pass:]
+    for line in lines:
+        row = list(line.strip())
+        row = [0 if x == char_valid else -1 for x in row]
+        rows.append(row)
+    file.close()
+    ndarray = np.array(rows)
+    grid = GridBlocks(rows=ndarray.shape[0], cols=ndarray.shape[1])
+    grid.ndarray = ndarray
+    return grid
