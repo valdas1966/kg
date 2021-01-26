@@ -167,7 +167,7 @@ def random_pairs_by_distance(grid, amount, size=1):
     return pairs
 
 
-def random_satellites_clean_line(grid, point, radius, amount, epochs):
+def random_satellites(grid, point, radius, amount, epochs=0):
     """
     ============================================================================
      Description: Return List of Satellite-Points with Clean-Line to a
@@ -179,7 +179,7 @@ def random_satellites_clean_line(grid, point, radius, amount, epochs):
         2. point : Point (Given Point)
         3. radius : int (Max Radius for Satellite)
         4. amount : int (Amount of Satellites)
-        5. epochs : int (Epochs to try - Must be Clean-Line)
+        5. epochs : int (Epochs to try. Epochs>0 -> must be Clean-Line)
     ============================================================================
      Return: list of Point (empty list on fail).
     ============================================================================
@@ -190,6 +190,8 @@ def random_satellites_clean_line(grid, point, radius, amount, epochs):
     assert type(amount) == int
     assert type(epochs) == int
     satellites = random_points_radius(grid, point, radius, amount)
+    if not epochs:
+        return satellites
     is_valid = are_clean_lines(grid, satellites)
     while epochs and not is_valid:
         satellites = random_points_radius(grid, point, radius, amount)
