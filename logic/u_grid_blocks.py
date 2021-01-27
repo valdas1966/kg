@@ -228,3 +228,6 @@ def from_map(path, char_valid='.', rows_pass=4):
     grid = GridBlocks(rows=ndarray.shape[0], cols=ndarray.shape[1])
     grid.ndarray = ndarray
     return grid
+
+def stam():
+    pass
