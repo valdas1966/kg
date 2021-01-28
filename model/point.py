@@ -38,6 +38,27 @@ class Point:
     def neighbor_right(self):
         return Point(self.x, self.y+1)
 
+    def in_rectangle(self, row_min, col_min, row_max, col_max):
+        """
+        ========================================================================
+         Description: Return True if the Point (Self) is within a Rectangle.
+        ========================================================================
+         Arguments:
+        ------------------------------------------------------------------------
+            1. row_min : int
+            2. col_min : int
+            3. row_max : int
+            4. col_max : int
+        ========================================================================
+         Return: bool
+        ========================================================================
+        """
+        assert type(row_min) == int
+        assert type(col_min) == int
+        assert type(row_max) == int
+        assert type(col_max) == int
+        return row_min <= self.x <= row_max and col_min <= self.y <= col_max
+
     def __str__(self):
         """
         ========================================================================

@@ -81,17 +81,39 @@ class GridBlocks(Grid):
             return super().is_valid_point(point)
         return super().is_valid_point(point) and not self.is_block(point)
 
-    def points(self):
+    def points(self, row_min=None, col_min=None, row_max=None, col_max=None):
         """
         ========================================================================
-         Description: Return List of Valid Points in the Grid (not blocks).
+         Description: Return List of Valid Points in the Grid (not blocks)
+                        within specified region.
+        ========================================================================
+         Arguments:
+        ------------------------------------------------------------------------
+            1. row_min : int
+            2. col_min : int
+            3. row_max : int
+            4. col_max : int
         ========================================================================
          Return: List of Points.
         ========================================================================
         """
-        return [p for p in super().points() if self.is_valid_point(p)]
+        if row_min is None:
+            row_min = 0
+        if col_min is None:
+            col_min = 0
+        if row_max is None:
+            row_max = self.rows - 1
+        if col_max is None:
+            col_max = self.cols - 1
+        assert type(row_min) == int
+        assert type(row_max) == int
+        assert type(col_min) == int
+        assert type(col_max) == int
+        return [p for p in super().points() if self.is_valid_point(p)
+                and p.in_rectangle(row_min, col_min, row_max, col_max)]
 
-    def points_random(self, amount):
+    def points_random(self, amount, row_min=None, col_min=None, row_max=None,
+                      col_max=None):
         """
         ========================================================================
          Description: Return List of Random Valid Points in the Grid.
@@ -99,11 +121,15 @@ class GridBlocks(Grid):
          Arguments:
         ------------------------------------------------------------------------
             1. amount : int
+            2. row_min : int
+            3. col_min : int
+            4. row_max : int
+            5. col_max : int
         ========================================================================
          Return: List of Points in the size of Amount.
         ========================================================================
         """
-        points = self.points()
+        points = self.points(row_min, col_min, row_max, col_max)
         random.shuffle(points)
         return points[:amount]
 

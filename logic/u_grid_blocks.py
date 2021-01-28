@@ -83,8 +83,11 @@ def random_points_radius(grid, point, radius, amount):
     assert type(amount) == int
     assert radius >= 0
     assert amount >= 0
-    sub = sub_grid_radius(grid, point, radius)
-    return sub.points_random(amount)
+    row_min = max(0, point.x - radius)
+    col_min = max(0, point.y - radius)
+    row_max = min(grid.rows-1, point.x + radius)
+    col_max = min(grid.cols-1, point.y + radius)
+    return grid.points_random(amount, row_min, col_min, row_max, col_max)
 
 
 def is_clean_line(grid, point_a, point_b):
@@ -228,6 +231,3 @@ def from_map(path, char_valid='.', rows_pass=4):
     grid = GridBlocks(rows=ndarray.shape[0], cols=ndarray.shape[1])
     grid.ndarray = ndarray
     return grid
-
-def stam():
-    pass

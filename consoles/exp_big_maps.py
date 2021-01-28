@@ -4,7 +4,7 @@ from f_utils import u_pickle
 from logic import u_grid_blocks
 
 
-path_dir = 'g:\\exp_big_maps\\'
+path_dir = 'd:\\exp_big_maps\\'
 path_maps = path_dir + 'Maps'
 pickle_grids = path_dir + 'grids.pickle'
 pickle_sg_potential = path_dir + 'sg_potential.pickle'
@@ -56,9 +56,10 @@ def create_sg():
             for distance, pairs in d_potential[cat][map].items():
                 if distance >= 1000:
                     continue
+                print(cat, map, distance)
                 li_sg = list()
                 for (start, goal_a) in pairs:
-                    print(len(li_sg))
+                    print(start)
                     grid = d_grids[cat][map]
                     goals = u_grid_blocks.random_satellites(grid=grid,
                                                             point=goal_a,
@@ -79,4 +80,3 @@ def create_sg():
 # create_sg()
 # print_sg()
 create_sg()
-#
