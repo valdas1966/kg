@@ -87,7 +87,10 @@ def random_points_radius(grid, point, radius, amount):
     col_min = max(0, point.y - radius)
     row_max = min(grid.rows-1, point.x + radius)
     col_max = min(grid.cols-1, point.y + radius)
-    return grid.points_random(amount, row_min, col_min, row_max, col_max)
+    points = grid.points_random(amount+1, row_min, col_min, row_max, col_max)
+    if point in points:
+        points.remove(point)
+    return points[:amount]
 
 
 def is_clean_line(grid, point_a, point_b):
@@ -193,8 +196,6 @@ def random_satellites(grid, point, radius, amount, epochs=0):
     assert type(amount) == int
     assert type(epochs) == int
     satellites = random_points_radius(grid, point, radius, amount)
-    if not epochs:
-        return satellites
     is_valid = are_clean_lines(grid, satellites)
     while epochs and not is_valid:
         satellites = random_points_radius(grid, point, radius, amount)
