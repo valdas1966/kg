@@ -3,7 +3,7 @@ from model.point import Point
 from model.grid import Grid
 from algo.astar_lookup import AStarLookup
 from algo.kastar_backward import KAStarBackward
-from logic.point_distance import LogicPointDistance as logic
+from logic import u_points
 
 
 class KAStarBi:
@@ -35,12 +35,11 @@ class KAStarBi:
         self.type_next_goal = type_next_goal
         self.goal_forward = None
         if type_forward_goal == 'NEAREST':
-            self.goals = list(logic.points_nearest(start, goals).keys())
+            self.goals = list(u_points.nearest(start, goals).keys())
             self.goal_forward = self.goals[0]
             self.goals = set(self.goals) - {self.goal_forward}
-        self.__run()
 
-    def __run(self):
+    def run(self):
         """
         ========================================================================
          Description: Run the Algorithm.
@@ -51,5 +50,6 @@ class KAStarBi:
         lookup = astar.lookup_start()
         kastar = KAStarBackward(self.grid, self.start, self.goals, lookup,
                                 self.type_next_goal)
+        kastar.run()
         self.closed = kastar.closed
         self.closed.update(astar.closed)

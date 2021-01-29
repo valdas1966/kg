@@ -1,7 +1,7 @@
 from f_utils import u_tester
 from model.point import Point
 from model.grid_blocks import GridBlocks
-algo.kastar_projection import KAStarProjection
+from algo.kastar_projection import KAStarProjection
 
 
 class TestKAStarProjection:

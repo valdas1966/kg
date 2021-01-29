@@ -1,7 +1,7 @@
 from f_utils import u_tester
 from model.point import Point
 from model.grid_blocks import GridBlocks
-algo.kastar_backward import KAStarBackward
+from algo.kastar_backward import KAStarBackward
 
 
 class TestKAStarBackward:
@@ -21,7 +21,8 @@ class TestKAStarBackward:
         grid.set_block(3, 2)
         start = Point(2, 3)
         goals = [Point(0, 3), Point(0, 1), Point(0, 0)]
-        kastar = KAStarBackward(grid, start, goals)
+        kastar = KAStarBackward(grid, start, goals, lookup=dict())
+        kastar.run()
         closed_test = kastar.closed
         closed_true = {Point(0, 0): 1, Point(0, 1): 1, Point(0, 2): 2,
                        Point(0, 3): 1, Point(0, 4): 1, Point(1, 0): 1,

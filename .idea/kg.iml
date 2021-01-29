@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://D:/mypy" />
     <content url="file://$MODULE_DIR$" />
+    <content url="file://G:/mypy" />
     <orderEntry type="jdk" jdkName="Python 3.6 (Python Intepreter)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="mypy" />

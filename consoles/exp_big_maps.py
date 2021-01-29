@@ -2,6 +2,9 @@ from collections import defaultdict
 from f_utils import u_file
 from f_utils import u_pickle
 from logic import u_grid_blocks
+from algo.kastar_projection import KAStarProjection
+from algo.kastar_backward import KAStarBackward
+from algo.kastar_bi import KAStarBi
 
 
 path_dir = 'g:\\exp_big_maps\\'
@@ -10,6 +13,10 @@ pickle_grids = path_dir + 'grids.pickle'
 pickle_sg_potential = path_dir + 'sg_potential.pickle'
 pickle_sg = path_dir + 'sg.pickle'
 csv_sg_potential = path_dir + 'sg_potential.csv'
+csv_sg = path_dir + 'sg.csv'
+csv_forward = path_dir + 'forward.csv'
+csv_backward = path_dir + 'backward.csv'
+csv_bi = path_dir + 'bi.csv'
 
 
 def create_grids():
@@ -77,7 +84,106 @@ def create_sg():
     u_pickle.dump(d_sg, pickle_sg)
 
 
+def print_sg():
+    file = open(csv_sg, 'w')
+    file.write('cat,map,distance,length\n')
+    d_sg = u_pickle.load(pickle_sg)
+    for cat in d_sg:
+        for map in sorted(d_sg[cat]):
+            for distance in sorted(d_sg[cat][map]):
+                length = len(d_sg[cat][map][distance])
+                file.write(f'{cat},{map},{distance},{length}\n')
+    file.close()
+
+
+def create_forward():
+    print('forward')
+    file = open(csv_forward, 'w')
+    file.write('cat,map,distance,i,forward_2,forward_3\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids)
+    d_sg = u_pickle.load(pickle_sg)
+    for cat in sorted(d_sg):
+        for map in sorted(d_sg[cat]):
+            grid = d_grids[cat][map]
+            for distance in sorted(d_sg[cat][map]):
+                for i, pair in enumerate(sorted(d_sg[cat][map][distance])):
+                    start, goals = pair
+                    kastar_2 = KAStarProjection(grid, start, goals[:2])
+                    kastar_2.run()
+                    nodes_2 = len(kastar_2.closed)
+                    kastar_3 = KAStarProjection(grid, start, goals[:3])
+                    kastar_3.run()
+                    nodes_3 = len(kastar_3.closed)
+                    file = open(csv_forward, 'a')
+                    file.write(f'{cat},{map},{distance},'
+                               f'{i},{nodes_2},{nodes_3}\n')
+                    file.close()
+                print(cat, map, distance)
+    file.close()
+
+
+def create_backward():
+    print('backward')
+    file = open(csv_backward, 'w')
+    file.write('cat,map,distance,i,backward_2,backward_3\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids)
+    d_sg = u_pickle.load(pickle_sg)
+    for cat in sorted(d_sg):
+        for map in sorted(d_sg[cat]):
+            grid = d_grids[cat][map]
+            for distance in sorted(d_sg[cat][map]):
+                for i, pair in enumerate(sorted(d_sg[cat][map][distance])):
+                    start, goals = pair
+                    kastar_2 = KAStarBackward(grid, start, goals[:2],
+                                              lookup=dict())
+                    kastar_2.run()
+                    nodes_2 = sum(kastar_2.closed.values())
+                    kastar_3 = KAStarBackward(grid, start, goals[:3],
+                                              lookup=dict())
+                    kastar_3.run()
+                    nodes_3 = sum(kastar_3.closed.values())
+                    file = open(csv_backward, 'a')
+                    file.write(f'{cat},{map},{distance},'
+                               f'{i},{nodes_2},{nodes_3}\n')
+                    file.close()
+                print(cat, map, distance)
+    file.close()
+
+
+def create_bi():
+    print('bi')
+    file = open(csv_bi, 'w')
+    file.write('cat,map,distance,i,bi_2,bi_3\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids)
+    d_sg = u_pickle.load(pickle_sg)
+    for cat in sorted(d_sg):
+        for map in sorted(d_sg[cat]):
+            grid = d_grids[cat][map]
+            for distance in sorted(d_sg[cat][map]):
+                for i, pair in enumerate(sorted(d_sg[cat][map][distance])):
+                    start, goals = pair
+                    kastar_2 = KAStarBi(grid, start, goals[:2])
+                    kastar_2.run()
+                    nodes_2 = sum(kastar_2.closed.values())
+                    kastar_3 = KAStarBi(grid, start, goals[:3])
+                    kastar_3.run()
+                    nodes_3 = sum(kastar_3.closed.values())
+                    file = open(csv_bi, 'a')
+                    file.write(f'{cat},{map},{distance},'
+                               f'{i},{nodes_2},{nodes_3}\n')
+                    file.close()
+                print(cat, map, distance)
+    file.close()
+
+
 # create_grids
 # create_sg()
 # print_sg()
-create_sg()
+# create_sg()
+# print_sg()
+# create_forward()
+# create_backward()
+create_bi()

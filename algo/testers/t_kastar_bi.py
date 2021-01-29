@@ -1,7 +1,7 @@
 from f_utils import u_tester
 from model.point import Point
 from model.grid_blocks import GridBlocks
-algo.kastar_bi import KAStarBi
+from algo.kastar_bi import KAStarBi
 
 
 class TestKAStarBi:
@@ -21,6 +21,7 @@ class TestKAStarBi:
         start = Point(4, 4)
         goals = {Point(4, 2), Point(3, 1), Point(3, 0)}
         kastar = KAStarBi(grid, start, goals)
+        kastar.run()
         closed_test = kastar.closed
         closed_true = {Point(1, 2): 1, Point(1, 3): 1, Point(1, 4): 1,
                        Point(2, 0): 1, Point(2, 1): 1, Point(2, 2): 1,
