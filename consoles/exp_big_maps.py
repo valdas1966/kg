@@ -182,17 +182,8 @@ def create_bi():
 # create_grids
 # create_sg_potential()
 # print_sg_potential()
-create_sg()
-print_sg()
+# create_sg()
+# print_sg()
 # create_forward()
 # create_backward()
 # create_bi()
-
-d_sg = u_pickle.load(pickle_sg)
-for cat in sorted(d_sg):
-    for map in sorted(d_sg[cat]):
-        for distance in sorted(d_sg[cat][map]):
-            for i, pair in enumerate(sorted(d_sg[cat][map][distance])):
-                start, goals = pair
-                if not len(goals) == len(set(goals)):
-                    print(cat, map, distance, i, goals)
