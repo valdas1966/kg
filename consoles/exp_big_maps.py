@@ -7,13 +7,15 @@ from algo.kastar_backward import KAStarBackward
 from algo.kastar_bi import KAStarBi
 
 
-path_dir = 'g:\\exp_big_maps\\'
+path_dir = 'd:\\exp_big_maps\\'
 path_maps = path_dir + 'Maps'
 pickle_grids = path_dir + 'grids.pickle'
 pickle_sg_potential = path_dir + 'sg_potential.pickle'
 pickle_sg = path_dir + 'sg.pickle'
+pickle_sg_far = path_dir + 'sg_far.pickle'
 csv_sg_potential = path_dir + 'sg_potential.csv'
 csv_sg = path_dir + 'sg.csv'
+csv_sg_far = path_dir + 'sg_far.csv'
 csv_forward = path_dir + 'forward.csv'
 csv_backward = path_dir + 'backward.csv'
 csv_bi = path_dir + 'bi.csv'
@@ -93,6 +95,42 @@ def print_sg():
             for distance in sorted(d_sg[cat][map]):
                 length = len(d_sg[cat][map][distance])
                 file.write(f'{cat},{map},{distance},{length}\n')
+    file.close()
+
+
+def create_sg_far():
+    d_grids = u_pickle.load(pickle_grids)
+    d_potential = u_pickle.load(pickle_sg_potential)
+    d_sg_far = dict()
+    for cat in d_potential:
+        d_sg_far[cat] = dict()
+        for map in d_potential[cat]:
+            grid = d_grids[cat][map]
+            pairs = d_potential[cat][map][900]
+            li_sg = list()
+            for (start, goal_a) in pairs:
+                goals = u_grid_blocks.random_points_radius(grid=grid,
+                                                           point=goal_a,
+                                                           radius=8,
+                                                           amount=9)
+                if goals:
+                    goals.append(goal_a)
+                    li_sg.append((start, goals))
+                    if len(li_sg) == 10:
+                        break
+            d_sg_far[cat][map] = li_sg
+            print(cat, map)
+    u_pickle.dump(d_sg_far, pickle_sg_far)
+
+
+def print_sg_far():
+    file = open(csv_sg_far, 'w')
+    file.write('cat,map,length\n')
+    d_sg = u_pickle.load(pickle_sg)
+    for cat in d_sg:
+        for map in sorted(d_sg[cat]):
+            length = len(d_sg[cat][map])
+            file.write(f'{cat},{map},{length}\n')
     file.close()
 
 
@@ -181,8 +219,10 @@ def create_bi():
 
 # create_grids
 # create_sg_potential()
-# print_sg_potential()
+#print_sg_potential()
 # create_sg()
+create_sg_far()
+print_sg_far()
 # print_sg()
 # create_forward()
 # create_backward()
