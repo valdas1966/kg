@@ -113,7 +113,7 @@ def create_sg_far():
                                                            point=goal_a,
                                                            radius=8,
                                                            amount=9)
-                if goals:
+                if len(goals) == 9:
                     goals.append(goal_a)
                     li_sg.append((start, goals))
                     if len(li_sg) == 10:
@@ -126,10 +126,10 @@ def create_sg_far():
 def print_sg_far():
     file = open(csv_sg_far, 'w')
     file.write('cat,map,length\n')
-    d_sg = u_pickle.load(pickle_sg)
-    for cat in d_sg:
-        for map in sorted(d_sg[cat]):
-            length = len(d_sg[cat][map])
+    d_sg_far = u_pickle.load(pickle_sg_far)
+    for cat in d_sg_far:
+        for map in sorted(d_sg_far[cat]):
+            length = len(d_sg_far[cat][map])
             file.write(f'{cat},{map},{length}\n')
     file.close()
 
@@ -137,7 +137,7 @@ def print_sg_far():
 def create_forward():
     print('forward')
     file = open(csv_forward, 'w')
-    file.write('cat,map,distance,i,forward_2,forward_3\n')
+    file.write('cat,map,goals,i,forward_2,forward_3\n')
     file.close()
     d_grids = u_pickle.load(pickle_grids)
     d_sg = u_pickle.load(pickle_sg)
@@ -217,12 +217,39 @@ def create_bi():
     file.close()
 
 
+def create_forward_far():
+    print('forward')
+    file = open(csv_forward, 'w')
+    file.write('cat,map,goals,i,forward_2,forward_3\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids)
+    d_sg = u_pickle.load(pickle_sg)
+    for cat in sorted(d_sg):
+        for map in sorted(d_sg[cat]):
+            grid = d_grids[cat][map]
+            for distance in sorted(d_sg[cat][map]):
+                for i, pair in enumerate(sorted(d_sg[cat][map][distance])):
+                    start, goals = pair
+                    kastar_2 = KAStarProjection(grid, start, goals[:2])
+                    kastar_2.run()
+                    nodes_2 = len(kastar_2.closed)
+                    kastar_3 = KAStarProjection(grid, start, goals[:3])
+                    kastar_3.run()
+                    nodes_3 = len(kastar_3.closed)
+                    file = open(csv_forward, 'a')
+                    file.write(f'{cat},{map},{distance},'
+                               f'{i},{nodes_2},{nodes_3}\n')
+                    file.close()
+                print(cat, map, distance)
+    file.close()
+
+
 # create_grids
 # create_sg_potential()
 #print_sg_potential()
 # create_sg()
-create_sg_far()
-print_sg_far()
+# create_sg_far()
+# print_sg_far()
 # print_sg()
 # create_forward()
 # create_backward()
