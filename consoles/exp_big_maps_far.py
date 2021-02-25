@@ -172,6 +172,10 @@ def create_bi():
 # print_sg_potential()
 # create_sg()
 # print_sg()
-create_forward()
+# create_forward()
 # create_backward()
 # create_bi()
+
+grids = u_pickle.load(pickle_grids)
+grid = grids['Cities'][1]
+print(len(grid.points()))
