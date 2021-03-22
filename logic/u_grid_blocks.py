@@ -149,7 +149,7 @@ def random_pairs_by_distance(grid, amount, size=1):
         2. amount : int (Amount of Pairs)
         3. size : int (Size to Round the Distances)
     ============================================================================
-     Return: dict {int -> list of tuple (Point_1, Point_2)}.
+     Return: dict {int (Distance) -> list of tuple (Point_1, Point_2)}.
     ============================================================================
     """
     assert type(grid) == GridBlocks

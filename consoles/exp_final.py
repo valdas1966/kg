@@ -9,8 +9,10 @@ dir_maps = 'd:\\temp\\maps\\'
 dir_storage = 'd:\\temp\\final\\'
 pickle_grids = dir_storage + 'grids.pickle'
 pickle_grids_final = dir_storage + 'grids_final.pickle'
-pickle_sg_pairs = dir_storage + 'sg_pairs.pickle'
+pickle_pairs = dir_storage + 'pairs.pickle'
+pickle_sg = dir_storage + 'sg.pickle'
 csv_grids = dir_storage + 'grids.csv'
+csv_sg_pairs = dir_storage + 'sg_pairs.csv'
 
 
 def create_grids():
@@ -66,9 +68,53 @@ def create_sg_pairs():
     u_pickle.dump(d_sg_pairs, pickle_sg_pairs)
 
 
+def print_sg_pairs():
+    d_sg_pairs = u_pickle.load(pickle_pairs)
+    file = open(csv_sg_pairs, 'w')
+    file.write('domain,map,distance,pairs\n')
+    for domain in sorted(d_sg_pairs):
+        for map in sorted(d_sg_pairs[domain]):
+            for distance in sorted(d_sg_pairs[domain][map]):
+                pairs = d_sg_pairs[domain][map][distance]
+                file.write(f'{domain},{map},{distance},{len(pairs)}\n')
+    file.close()
+
+
+def create_sg():
+    d_grids = u_pickle.load(pickle_grids)
+    d_pairs = u_pickle.load(pickle_pairs)
+    d_sg = dict()
+    for domain in sorted(d_pairs):
+        d_sg[domain] = dict()
+        for map in sorted(d_pairs[domain]):
+            d_sg[domain][map] = dict()
+            grid = d_grids[domain][map]
+            for k in range(2, 11):
+                d_sg[domain][map][k] = dict()
+                for distance in sorted(d_pairs[domain][map]):
+                    if distance > 900:
+                        continue
+                    pairs = d_pairs[domain][map][distance]
+                    li_sg = list()
+                    for (start, goal_a) in pairs:
+                        goals = u_grid_blocks.random_points_radius(grid=grid,
+                                                           point=goal_a,
+                                                           radius=10,
+                                                           amount=k-1)
+                        if len(goals) == k-1:
+                            goals.append(goal_a)
+                            li_sg.append((start, goals))
+                        if len(li_sg) == 11:
+                            break
+                    d_sg[domain][map][k][distance] = li_sg
+                    print(domain, map, k, distance)
+    u_pickle.dump(d_sg, pickle_sg)
+
+
 
 # create_grids()
 # print_grids()
 # create_grids_final()
-create_sg_pairs()
-
+#create_sg_pairs()
+# print_sg_pairs()
+create_sg()
