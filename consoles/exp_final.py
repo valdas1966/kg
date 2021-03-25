@@ -134,4 +134,4 @@ def create_sg(domain, pickle_pairs_domain, pickle_sg):
 # create_sg_pairs()
 # print_sg_pairs()
 # split_pairs()
-create_sg('random', pickle_pairs_random, pickle_sg_random)
+# create_sg('random', pickle_pairs_random, pickle_sg_random)
