@@ -1,4 +1,5 @@
 from collections import defaultdict
+from algo.kastar_projection import KAStarProjection
 from logic import u_grid_blocks
 from f_utils import u_file
 from f_utils import u_pickle
@@ -7,21 +8,18 @@ import pandas as pd
 
 dir_maps = 'd:\\temp\\maps\\'
 dir_storage = 'd:\\temp\\final\\'
+dir_storage = 'g:\\roni\\model\\'
+dir_forward = dir_storage + 'Forward\\'
 pickle_grids = dir_storage + 'grids.pickle'
 pickle_grids_final = dir_storage + 'grids_final.pickle'
 pickle_pairs = dir_storage + 'pairs.pickle'
-pickle_pairs_cities = dir_storage + 'pairs_cities.pickle'
-pickle_pairs_games = dir_storage + 'pairs_games.pickle'
-pickle_pairs_mazes = dir_storage + 'pairs_mazes.pickle'
-pickle_pairs_random = dir_storage + 'pairs_random.pickle'
-pickle_pairs_rooms = dir_storage + 'pairs_rooms.pickle'
-pickle_sg_cities = dir_storage + 'sg_cities.pickle'
-pickle_sg_games = dir_storage + 'sg_games.pickle'
-pickle_sg_mazes = dir_storage + 'sg_mazes.pickle'
-pickle_sg_random = dir_storage + 'sg_random.pickle'
-pickle_sg_rooms = dir_storage + 'sg_rooms.pickle'
+f_pickle_pairs = dir_storage + 'pairs_{0}.pickle'
+f_pickle_sg = dir_storage + 'sg_{0}.pickle'
+f_pickle_forward = dir_forward + '{0}_{1}_{2}_{3}_{4}.pickle'
 csv_grids = dir_storage + 'grids.csv'
 csv_sg_pairs = dir_storage + 'sg_pairs.csv'
+csv_sg = dir_storage + 'sg.csv'
+f_csv_forward = dir_storage + 'forward_{0}.csv'
 
 
 def create_grids():
@@ -128,6 +126,48 @@ def create_sg(domain, pickle_pairs_domain, pickle_sg):
     u_pickle.dump(d_sg, pickle_sg)
 
 
+def print_sg():
+    def print_domain(file, pickle_sg):
+        d_sg = u_pickle.load(pickle_sg)
+        for domain in d_sg:
+            for map in sorted(d_sg[domain]):
+                for k in sorted(d_sg[domain][map]):
+                    for distance in sorted(d_sg[domain][map][k]):
+                        sg = len(d_sg[domain][map][k][distance])
+                        file.write(f'{domain},{map},{k},{distance},{sg}\n')
+    file = open(csv_sg, 'w')
+    file.write('domain,map,k,distance,sg\n')
+    print_domain(file, pickle_sg_mazes)
+    print_domain(file, pickle_sg_random)
+    print_domain(file, pickle_sg_rooms)
+    file.close()
+
+
+def create_forward(domain):
+    print('forward', domain)
+    file = open(f_csv_forward.format(domain), 'w')
+    file.write('domain,map,k,distance,i,nodes\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids_final)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    kastar = KAStarProjection(grid, start, goals)
+                    kastar.run()
+                    pickle = f_pickle_forward.format(domain, map, k,
+                                                     distance, i)
+                    u_pickle.dump(kastar, pickle)
+                    nodes = len(kastar.closed)
+                    file = open(f_csv_forward.format(domain), 'a')
+                    file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
+                    file.close()
+                    print(domain, map, k, distance, i)
+
+
 # create_grids()
 # print_grids()
 # create_grids_final()
@@ -135,3 +175,7 @@ def create_sg(domain, pickle_pairs_domain, pickle_sg):
 # print_sg_pairs()
 # split_pairs()
 # create_sg('random', pickle_pairs_random, pickle_sg_random)
+# print_sg()
+# create_forward('mazes')
+# create_forward('random')
+create_forward('rooms')
