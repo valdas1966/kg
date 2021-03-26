@@ -1,5 +1,8 @@
 from collections import defaultdict
+import datetime
 from algo.kastar_projection import KAStarProjection
+from algo.kastar_bi import KAStarBi
+from algo.kastar_backward import KAStarBackward
 from logic import u_grid_blocks
 from f_utils import u_file
 from f_utils import u_pickle
@@ -20,6 +23,7 @@ csv_grids = dir_storage + 'grids.csv'
 csv_sg_pairs = dir_storage + 'sg_pairs.csv'
 csv_sg = dir_storage + 'sg.csv'
 f_csv_forward = dir_storage + 'forward_{0}.csv'
+f_csv_bi = dir_storage + 'bi_{0}.csv'
 
 
 def create_grids():
@@ -165,7 +169,30 @@ def create_forward(domain):
                     file = open(f_csv_forward.format(domain), 'a')
                     file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
                     file.close()
-                    print(domain, map, k, distance, i)
+                    print(datetime.datetime.now(), domain, map, k, distance, i)
+
+
+def create_bi(domain):
+    print('bi', domain)
+    file = open(f_csv_bi.format(domain), 'w')
+    file.write('domain,map,k,distance,i,nodes\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids_final)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    kastar = KAStarBackward(grid, start, goals[:k],
+                                            lookup=dict())
+                    kastar.run()
+                    nodes = sum(kastar.closed.values())
+                    file = open(f_csv_bi.format(domain), 'a')
+                    file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
+                    file.close()
+                    print(datetime.datetime.now(), domain, map, k, distance, i)
 
 
 # create_grids()
@@ -178,4 +205,8 @@ def create_forward(domain):
 # print_sg()
 # create_forward('mazes')
 # create_forward('random')
-create_forward('rooms')
+# create_forward('rooms')
+# create_bi('mazes')
+# create_bi('random')
+# create_bi('rooms')
+
