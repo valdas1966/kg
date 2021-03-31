@@ -9,6 +9,7 @@ class TestKAStarProjection:
     def __init__(self):
         u_tester.print_start(__file__)
         TestKAStarProjection.__tester_run_manual()
+        TestKAStarProjection.__tester_run_found()
         u_tester.print_finish(__file__)
 
     @staticmethod
@@ -37,6 +38,22 @@ class TestKAStarProjection:
                        Point(3, 0), Point(3, 1), Point(3, 3)}
         p1 = closed_test == closed_true
         u_tester.run(p0, p1)
+
+    @staticmethod
+    def __tester_run_found():
+        grid = GridBlocks(5)
+        start = Point(4, 4)
+        goals = [Point(3, 3), Point(0, 0)]
+        kastar = KAStarProjection(grid, start, goals)
+        kastar.run()
+        p0 = kastar.is_found
+        grid.set_block(0, 1)
+        grid.set_block(1, 0)
+        kastar = KAStarProjection(grid, start, goals)
+        kastar.run()
+        p1 = not kastar.is_found
+        u_tester.run(p0, p1)
+
 
 
 if __name__ == '__main__':

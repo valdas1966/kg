@@ -1,5 +1,6 @@
 from collections import defaultdict
 import datetime
+from algo.astar import AStar
 from algo.kastar_projection import KAStarProjection
 from algo.kastar_bi import KAStarBi
 from algo.kastar_backward import KAStarBackward
@@ -22,6 +23,7 @@ f_pickle_forward = dir_forward + '{0}_{1}_{2}_{3}_{4}.pickle'
 csv_grids = dir_storage + 'grids.csv'
 csv_sg_pairs = dir_storage + 'sg_pairs.csv'
 csv_sg = dir_storage + 'sg.csv'
+f_csv_found = dir_storage + 'found_{0}.csv'
 f_csv_forward = dir_storage + 'forward_{0}.csv'
 f_csv_bi = dir_storage + 'bi_{0}.csv'
 
@@ -147,6 +149,39 @@ def print_sg():
     file.close()
 
 
+def print_found(domain):
+    print('check_is_found', domain)
+    d_grids = u_pickle.load(pickle_grids_final)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    file = open(f_csv_found.format(domain), 'w')
+    file.write('domain,map,k,distance,i,goal,found\n')
+    file.close()
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    goal_0 = goals[0]
+                    astar = AStar(grid, start, goal_0)
+                    astar.run()
+                    found = int(astar.is_found)
+                    file = open(f_csv_found.format(domain), 'a')
+                    file.write(f'{domain},{map},{k},{distance},{i},'
+                               f'{goal_0},{found}\n')
+                    file.close()
+                    for goal in goals[1:]:
+                        astar = AStar(grid, goal_0, goal)
+                        astar.run()
+                        found = int(astar.is_found)
+                        file = open(f_csv_found.format(domain), 'a')
+                        file.write(f'{domain},{map},{k},{distance},{i},'
+                                   f'{goal},{found}\n')
+                        file.close()
+                    print(datetime.datetime.now(), 'check', domain, map, k,
+                          distance, i)
+
+
 def create_forward(domain):
     print('forward', domain)
     file = open(f_csv_forward.format(domain), 'w')
@@ -155,6 +190,8 @@ def create_forward(domain):
     d_grids = u_pickle.load(pickle_grids_final)
     d_sg = u_pickle.load(f_pickle_sg.format(domain))
     for map in sorted(d_sg[domain]):
+        if map == 'maze512-1-0':
+            continue
         grid = d_grids[domain][map]
         for k in sorted(d_sg[domain][map]):
             for distance in sorted(d_sg[domain][map][k]):
@@ -185,10 +222,11 @@ def create_bi(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    kastar = KAStarBackward(grid, start, goals[:k],
-                                            lookup=dict())
+                    kastar = KAStarBi(grid, start, goals)
                     kastar.run()
                     nodes = sum(kastar.closed.values())
+                    if not kastar.is_found:
+                        nodes = -1
                     file = open(f_csv_bi.format(domain), 'a')
                     file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
                     file.close()
@@ -203,10 +241,23 @@ def create_bi(domain):
 # split_pairs()
 # create_sg('random', pickle_pairs_random, pickle_sg_random)
 # print_sg()
-# create_forward('mazes')
+# print_found('mazes')
+# print_found('random')
+# print_found('rooms')
+create_forward('mazes')
 # create_forward('random')
 # create_forward('rooms')
 # create_bi('mazes')
 # create_bi('random')
 # create_bi('rooms')
 
+
+# mazes maze512-1-0 2 500 9
+d_grids = u_pickle.load(pickle_grids_final)
+grid = d_grids['mazes']['maze512-1-0']
+d_sg = u_pickle.load(f_pickle_sg.format('mazes'))
+start, goals = d_sg['mazes']['maze512-1-0'][3][0][0]
+print(start, goals)
+kastar = KAStarProjection(grid, start, goals)
+kastar.run()
+print(len(kastar.closed))

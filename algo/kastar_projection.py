@@ -28,6 +28,7 @@ class KAStarProjection:
         self.goals = u_points.nearest(start, goals)
         self.opened = Opened()
         self.closed = set()
+        self.is_found = False
 
     def run(self):
         """
@@ -35,6 +36,7 @@ class KAStarProjection:
          Description: Run KA* Algo in Projective Mode (one Goal each run).
         ========================================================================
         """
+        self.is_found = True
         for goal in self.goals:
             if goal in self.closed:
                 continue
@@ -44,6 +46,9 @@ class KAStarProjection:
             astar.opened = self.opened
             astar.closed = self.closed
             astar.run()
+            if not astar.is_found:
+                self.is_found = False
+                break
             self.opened = astar.opened
             self.closed = astar.closed
 

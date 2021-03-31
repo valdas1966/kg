@@ -1,8 +1,8 @@
 from f_utils import u_tester
 from model.point import Point
 from model.grid_blocks import GridBlocks
-algo.astar import AStar
-algo.astar_lookup import AStarLookup
+from algo.astar import AStar
+from algo.astar_lookup import AStarLookup
 
 
 class TestAstarLookup:
@@ -10,6 +10,7 @@ class TestAstarLookup:
     def __init__(self):
         u_tester.print_start(__file__)
         TestAstarLookup.__tester_run()
+        TestAstarLookup.__tester_is_found()
         TestAstarLookup.__tester_f_value()
         TestAstarLookup.__tester_lookup_start()
         TestAstarLookup.__tester_lookup_goal()
@@ -32,6 +33,23 @@ class TestAstarLookup:
             astar_lookup.run()
             p0 = astar.closed == astar_lookup.closed
             p1 = astar.optimal_path() == astar_lookup.optimal_path()
+        u_tester.run(p0, p1)
+
+    @staticmethod
+    def __tester_is_found():
+        grid = GridBlocks(5)
+        grid.set_block(0, 1)
+        grid.set_block(1, 0)
+        start = Point(4, 4)
+        goal_1 = Point(1, 1)
+        goal_2 = Point(0, 0)
+        astar_1 = AStarLookup(grid, start, goal_1)
+        astar_1.run()
+        p0 = astar_1.is_found
+        lookup = astar_1.lookup_start()
+        astar_2 = AStarLookup(grid, goal_2, start, lookup)
+        astar_2.run()
+        p1 = not astar_2.is_found
         u_tester.run(p0, p1)
 
     @staticmethod

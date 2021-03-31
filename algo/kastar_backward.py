@@ -31,6 +31,7 @@ class KAStarBackward:
         self.start = start
         self.goals = goals
         self.lookup = lookup
+        self.is_found = False
         if type_next_goal == 'NEAREST':
             self.goals = list(u_points.nearest(start, goals).keys())
 
@@ -40,11 +41,15 @@ class KAStarBackward:
          Description: Run the Algorithm.
         ========================================================================
         """
+        self.is_found = True
         li_closed = list()
         for goal in self.goals:
             astar = AStarLookup(grid=self.grid, start=goal, goal=self.start,
                                 lookup=self.lookup)
             astar.run()
+            if not astar.is_found:
+                self.is_found = False
+                return
             li_closed = li_closed + list(astar.closed)
             self.lookup.update(astar.lookup_goal())
         self.closed = Counter(li_closed)

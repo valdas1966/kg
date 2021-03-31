@@ -47,7 +47,6 @@ class AStarLookup(AStar):
         ========================================================================
         """
         self.best = self.opened.pop()
-        # print(self.start, self.goal, self.best)
         self.closed.add(self.best)
         if self.best == self.goal:
             self.is_found = True

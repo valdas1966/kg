@@ -34,6 +34,7 @@ class KAStarBi:
         self.goals = goals
         self.type_next_goal = type_next_goal
         self.goal_forward = None
+        self.is_found = False
         if type_forward_goal == 'NEAREST':
             self.goals = list(u_points.nearest(start, goals).keys())
             self.goal_forward = self.goals[0]
@@ -45,11 +46,18 @@ class KAStarBi:
          Description: Run the Algorithm.
         ========================================================================
         """
+        self.is_found = True
         astar = AStarLookup(self.grid, self.start, self.goal_forward)
         astar.run()
+        if not astar.is_found:
+            self.is_found = False
+            return
         lookup = astar.lookup_start()
         kastar = KAStarBackward(self.grid, self.start, self.goals, lookup,
                                 self.type_next_goal)
         kastar.run()
+        if not kastar.is_found:
+            self.is_found = False
+            return
         self.closed = kastar.closed
         self.closed.update(astar.closed)

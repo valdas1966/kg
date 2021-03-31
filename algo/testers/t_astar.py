@@ -1,9 +1,9 @@
 from f_utils import u_tester
-from f_utils import u_random
 from model.point import Point
 from model.grid_blocks import GridBlocks
 from algo.astar import AStar
 from logic.grid_blocks_ghf import LogicGridBlocksGHF
+import random
 
 
 class TestAlgoAStar:
@@ -44,14 +44,23 @@ class TestAlgoAStar:
         closed_test = astar.closed
         closed_true = set(optimal_path_true).union({Point(0, 2), Point(0, 3)})
         p3 = closed_test == closed_true
-        u_tester.run(p0, p1, p2, p3)
+        # Not Found
+        grid = GridBlocks(5)
+        grid.set_block(0, 1)
+        grid.set_block(1, 0)
+        start = Point(4, 4)
+        goal = Point(0, 0)
+        astar = AStar(grid, start, goal)
+        astar.run()
+        p4 = not astar.is_found
+        u_tester.run(p0, p1, p2, p3, p4)
 
     @staticmethod
     def __tester_run_random():
         p0 = True
         p1 = True
         for i in range(1000):
-            n = u_random.get_random_int(3, 10)
+            n = random.randint(3, 10)
             grid = GridBlocks(rows=n)
             start, goal = grid.points_random(2)
             astar = AStar(grid, start, goal)
@@ -66,8 +75,8 @@ class TestAlgoAStar:
     def __tester_random_blocks():
         p0 = True
         for i in range(1000):
-            n = u_random.get_random_int(3, 10)
-            b = u_random.get_random_int(10, 50)
+            n = random.randint(3, 10)
+            b = random.randint(10, 50)
             grid = GridBlocks(rows=n, percent_blocks=b)
             start, goal = grid.points_random(2)
             astar = AStar(grid, start, goal)
