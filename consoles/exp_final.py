@@ -12,7 +12,7 @@ import pandas as pd
 
 dir_maps = 'd:\\temp\\maps\\'
 dir_storage = 'd:\\temp\\final\\'
-dir_storage = 'g:\\roni\\model\\'
+# dir_storage = 'g:\\roni\\model\\'
 dir_forward = dir_storage + 'Forward\\'
 pickle_grids = dir_storage + 'grids.pickle'
 pickle_grids_final = dir_storage + 'grids_final.pickle'
@@ -21,11 +21,12 @@ f_pickle_pairs = dir_storage + 'pairs_{0}.pickle'
 f_pickle_sg = dir_storage + 'sg_{0}.pickle'
 f_pickle_forward = dir_forward + '{0}_{1}_{2}_{3}_{4}.pickle'
 csv_grids = dir_storage + 'grids.csv'
-csv_sg_pairs = dir_storage + 'sg_pairs.csv'
+f_csv_pairs = dir_storage + 'pairs_{0}.csv'
 csv_sg = dir_storage + 'sg.csv'
 f_csv_found = dir_storage + 'found_{0}.csv'
 f_csv_forward = dir_storage + 'forward_{0}.csv'
 f_csv_bi = dir_storage + 'bi_{0}.csv'
+f_csv_backward = dir_storage + 'backward_{0}.csv'
 
 
 def create_grids():
@@ -34,7 +35,7 @@ def create_grids():
         domain = filepath.split('\\')[-2]
         if domain not in d_grids:
             d_grids[domain] = defaultdict(dict)
-        map = filepath.split('\\')[-1].replace('.map','')
+        map = filepath.split('\\')[-1].replace('.map', '')
         grid = u_grid_blocks.from_map(filepath)
         d_grids[domain][map] = grid
         print(filepath, grid.rows, grid.cols, len(grid.points()))
@@ -67,44 +68,45 @@ def create_grids_final():
     u_pickle.dump(grids_final, pickle_grids_final)
 
 
-def create_sg_pairs():
-    d_sg_pairs = dict()
+def grids_final_add_warcraft():
+    domain = 'warcraft'
     d_grids = u_pickle.load(pickle_grids_final)
-    for domain in d_grids:
-        d_sg_pairs[domain] = dict()
-        for map, grid in d_grids[domain].items():
-            pairs = u_grid_blocks.random_pairs_by_distance(grid,
-                                                           amount=10000000,
-                                                           size=100)
-            d_sg_pairs[domain][map] = pairs
-            print(domain, map)
-    u_pickle.dump(d_sg_pairs, pickle_pairs)
+    d_grids[domain] = dict()
+    for filepath in u_file.filepaths(dir_maps + '\\' + domain):
+        map = filepath.split('\\')[-1].replace('.map', '')
+        grid = u_grid_blocks.from_map(filepath)
+        d_grids[domain][map] = grid
+        print(filepath, grid.rows, grid.cols, len(grid.points()))
+    u_pickle.dump(d_grids, pickle_grids_final)
 
 
-def print_sg_pairs():
-    d_sg_pairs = u_pickle.load(pickle_pairs)
-    file = open(csv_sg_pairs, 'w')
+def create_pairs(domain):
+    d_pairs = dict()
+    d_pairs[domain] = dict()
+    d_grids = u_pickle.load(pickle_grids_final)
+    for map, grid in d_grids[domain].items():
+        pairs = u_grid_blocks.random_pairs_by_distance(grid,
+                                                        amount=10000000,
+                                                        size=100)
+        d_pairs[domain][map] = pairs
+        print(domain, map)
+    u_pickle.dump(d_pairs, f_pickle_pairs.format(domain))
+
+
+def print_pairs(domain):
+    d_pairs = u_pickle.load(f_pickle_pairs.format(domain))
+    file = open(f_csv_pairs.format(domain), 'w')
     file.write('domain,map,distance,pairs\n')
-    for domain in sorted(d_sg_pairs):
-        for map in sorted(d_sg_pairs[domain]):
-            for distance in sorted(d_sg_pairs[domain][map]):
-                pairs = d_sg_pairs[domain][map][distance]
-                file.write(f'{domain},{map},{distance},{len(pairs)}\n')
+    for map in sorted(d_pairs[domain]):
+        for distance in sorted(d_pairs[domain][map]):
+            pairs = d_pairs[domain][map][distance]
+            file.write(f'{domain},{map},{distance},{len(pairs)}\n')
     file.close()
 
 
-def split_pairs():
-    d_pairs = u_pickle.load(pickle_pairs)
-    u_pickle.dump(d_pairs['cities'], pickle_pairs_cities)
-    u_pickle.dump(d_pairs['games'], pickle_pairs_games)
-    u_pickle.dump(d_pairs['mazes'], pickle_pairs_mazes)
-    u_pickle.dump(d_pairs['random'], pickle_pairs_random)
-    u_pickle.dump(d_pairs['rooms'], pickle_pairs_rooms)
-
-
-def create_sg(domain, pickle_pairs_domain, pickle_sg):
+def create_sg(domain):
     d_grids = u_pickle.load(pickle_grids)
-    d_pairs_domain = u_pickle.load(pickle_pairs_domain)
+    d_pairs_domain = u_pickle.load(f_pickle_pairs.format(domain))
     d_sg = dict()
     d_sg[domain] = dict()
     for i, map in enumerate(sorted(d_pairs_domain)):
@@ -129,7 +131,7 @@ def create_sg(domain, pickle_pairs_domain, pickle_sg):
                         break
                 d_sg[domain][map][k][distance] = li_sg
                 print(domain, i, map, k, distance, len(li_sg))
-    u_pickle.dump(d_sg, pickle_sg)
+    u_pickle.dump(d_sg, f_pickle_sg.format(domain))
 
 
 def print_sg():
@@ -197,6 +199,8 @@ def create_forward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
+                    if i > 0:
+                        continue
                     kastar = KAStarProjection(grid, start, goals)
                     kastar.run()
                     pickle = f_pickle_forward.format(domain, map, k,
@@ -222,6 +226,8 @@ def create_bi(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
+                    if i > 0:
+                        continue
                     kastar = KAStarBi(grid, start, goals)
                     kastar.run()
                     nodes = sum(kastar.closed.values())
@@ -233,25 +239,55 @@ def create_bi(domain):
                     print(datetime.datetime.now(), domain, map, k, distance, i)
 
 
+def create_backward(domain):
+    print('backward', domain)
+    file = open(f_csv_backward.format(domain), 'w')
+    file.write('domain,map,k,distance,i,nodes\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids_final)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    if i > 0:
+                        continue
+                    kastar = KAStarBackward(grid, start, goals, lookup=dict())
+                    kastar.run()
+                    nodes = sum(kastar.closed.values())
+                    if not kastar.is_found:
+                        nodes = -1
+                    file = open(f_csv_backward.format(domain), 'a')
+                    file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
+                    file.close()
+                    print(datetime.datetime.now(), domain, map, k, distance, i)
+
+
 # create_grids()
 # print_grids()
 # create_grids_final()
-# create_sg_pairs()
-# print_sg_pairs()
+# grids_final_add_warcraft()
+# create_pairs('warcraft')
+# print_pairs('warcraft')
 # split_pairs()
-# create_sg('random', pickle_pairs_random, pickle_sg_random)
+# create_sg('cities')
 # print_sg()
-# print_found('mazes')
-# print_found('random')
-# print_found('rooms')
-create_forward('mazes')
+# create_forward('mazes')
 # create_forward('random')
 # create_forward('rooms')
+# create_forward('games')
+create_forward('cities')
 # create_bi('mazes')
 # create_bi('random')
 # create_bi('rooms')
+# create_bi('games')
+# create_bi('cities')
+# create_backward('games')
+# create_backward('cities')
 
-
+"""
 # mazes maze512-1-0 2 500 9
 d_grids = u_pickle.load(pickle_grids_final)
 grid = d_grids['mazes']['maze512-1-0']
@@ -261,3 +297,4 @@ print(start, goals)
 kastar = KAStarProjection(grid, start, goals)
 kastar.run()
 print(len(kastar.closed))
+"""
