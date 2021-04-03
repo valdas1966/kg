@@ -12,7 +12,7 @@ import pandas as pd
 
 dir_maps = 'd:\\temp\\maps\\'
 dir_storage = 'd:\\temp\\final\\'
-# dir_storage = 'g:\\roni\\model\\'
+dir_storage = 'g:\\roni\\model\\'
 dir_forward = dir_storage + 'Forward\\'
 pickle_grids = dir_storage + 'grids.pickle'
 pickle_grids_final = dir_storage + 'grids_final.pickle'
@@ -192,20 +192,18 @@ def create_forward(domain):
     d_grids = u_pickle.load(pickle_grids_final)
     d_sg = u_pickle.load(f_pickle_sg.format(domain))
     for map in sorted(d_sg[domain]):
-        if map == 'maze512-1-0':
-            continue
         grid = d_grids[domain][map]
         for k in sorted(d_sg[domain][map]):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if i > 0:
+                    if not i == 0:
                         continue
                     kastar = KAStarProjection(grid, start, goals)
                     kastar.run()
                     pickle = f_pickle_forward.format(domain, map, k,
                                                      distance, i)
-                    u_pickle.dump(kastar, pickle)
+                    u_pickle.dump(kastar.closed, pickle)
                     nodes = len(kastar.closed)
                     file = open(f_csv_forward.format(domain), 'a')
                     file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
@@ -226,7 +224,7 @@ def create_bi(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if i > 0:
+                    if not i == 1:
                         continue
                     kastar = KAStarBi(grid, start, goals)
                     kastar.run()
@@ -252,7 +250,7 @@ def create_backward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if i > 0:
+                    if not i == 1:
                         continue
                     kastar = KAStarBackward(grid, start, goals, lookup=dict())
                     kastar.run()
@@ -274,16 +272,19 @@ def create_backward(domain):
 # split_pairs()
 # create_sg('cities')
 # print_sg()
-# create_forward('mazes')
+create_forward('mazes')
 # create_forward('random')
 # create_forward('rooms')
 # create_forward('games')
-create_forward('cities')
+# create_forward('cities')
 # create_bi('mazes')
 # create_bi('random')
 # create_bi('rooms')
 # create_bi('games')
 # create_bi('cities')
+# create_backward('mazes')
+# create_backward('random')
+# create_backward('rooms')
 # create_backward('games')
 # create_backward('cities')
 
