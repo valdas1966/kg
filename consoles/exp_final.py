@@ -197,7 +197,7 @@ def create_forward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 0:
+                    if not i == 1:
                         continue
                     kastar = KAStarProjection(grid, start, goals)
                     kastar.run()
