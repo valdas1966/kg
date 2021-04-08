@@ -12,7 +12,7 @@ import pandas as pd
 
 dir_maps = 'd:\\temp\\maps\\'
 dir_storage = 'd:\\temp\\final\\'
-dir_storage = 'g:\\roni\\model\\'
+# dir_storage = 'g:\\roni\\model\\'
 dir_forward = dir_storage + 'Forward\\'
 pickle_grids = dir_storage + 'grids.pickle'
 pickle_grids_final = dir_storage + 'grids_final.pickle'
@@ -197,7 +197,7 @@ def create_forward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 1:
+                    if not i == 4:
                         continue
                     kastar = KAStarProjection(grid, start, goals)
                     kastar.run()
@@ -224,7 +224,7 @@ def create_bi(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 1:
+                    if not i == 4:
                         continue
                     kastar = KAStarBi(grid, start, goals)
                     kastar.run()
@@ -250,7 +250,7 @@ def create_backward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 1:
+                    if not i == 4:
                         continue
                     kastar = KAStarBackward(grid, start, goals, lookup=dict())
                     kastar.run()
@@ -272,7 +272,7 @@ def create_backward(domain):
 # split_pairs()
 # create_sg('cities')
 # print_sg()
-create_forward('mazes')
+# create_forward('mazes')
 # create_forward('random')
 # create_forward('rooms')
 # create_forward('games')
