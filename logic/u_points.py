@@ -65,6 +65,4 @@ def distances(points):
     for point_a in points:
         for point_b in points - {point_a}:
             res += point_a.distance(point_b)
-    return int(res / len(points))
-
-#
+    return int(res / len(points) / (len(points)-1))

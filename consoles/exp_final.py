@@ -5,6 +5,7 @@ from algo.kastar_projection import KAStarProjection
 from algo.kastar_bi import KAStarBi
 from algo.kastar_backward import KAStarBackward
 from logic import u_grid_blocks
+from logic import u_points
 from f_utils import u_file
 from f_utils import u_pickle
 import pandas as pd
@@ -27,6 +28,7 @@ f_csv_found = dir_storage + 'found_{0}.csv'
 f_csv_forward = dir_storage + 'forward_{0}.csv'
 f_csv_bi = dir_storage + 'bi_{0}.csv'
 f_csv_backward = dir_storage + 'backward_{0}.csv'
+f_csv_fe = dir_storage + 'fe_{0}.csv'
 
 
 def create_grids():
@@ -224,7 +226,7 @@ def create_bi(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 4:
+                    if not i == 5:
                         continue
                     kastar = KAStarBi(grid, start, goals)
                     kastar.run()
@@ -250,7 +252,7 @@ def create_backward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 4:
+                    if not i == 5:
                         continue
                     kastar = KAStarBackward(grid, start, goals, lookup=dict())
                     kastar.run()
@@ -261,6 +263,24 @@ def create_backward(domain):
                     file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
                     file.close()
                     print(datetime.datetime.now(), domain, map, k, distance, i)
+
+
+def create_fe(domain):
+    csv_fe = f_csv_fe.format(domain)
+    u_file.write(csv_fe, 'domain, map, k, distance_start_goals, '
+                         'distance_goals, distance_rows, '
+                         'distance_cols, start_up, start_down, start_left,'
+                         'start_right, goals_up, goals_down, goals_left,'
+                         'goals_right\n')
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    distance_start_goals = u_points.distances_to(start, goals)
+                    distance_goals = u_points.distances(goals)
+
 
 
 # create_grids()
