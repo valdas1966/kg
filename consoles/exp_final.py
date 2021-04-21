@@ -199,7 +199,7 @@ def create_forward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 7:
+                    if not i == 9:
                         continue
                     kastar = KAStarProjection(grid, start, goals)
                     kastar.run()
@@ -226,7 +226,7 @@ def create_bi(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 7:
+                    if not i == 9:
                         continue
                     kastar = KAStarBi(grid, start, goals)
                     kastar.run()
@@ -252,7 +252,7 @@ def create_backward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 7:
+                    if not i == 9:
                         continue
                     kastar = KAStarBackward(grid, start, goals, lookup=dict())
                     kastar.run()
