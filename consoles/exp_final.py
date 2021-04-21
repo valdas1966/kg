@@ -280,6 +280,8 @@ def create_fe(domain):
                 for i, (start, goals) in enumerate(li_sg):
                     distance_start_goals = u_points.distances_to(start, goals)
                     distance_goals = u_points.distances(goals)
+                    distance_rows = u_points.distance_rows([start], goals)
+                    distance_cols = u_points.distance_cols([start], goals)
 
 
 
