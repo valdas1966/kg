@@ -5,6 +5,7 @@ from algo.kastar_projection import KAStarProjection
 from algo.kastar_bi import KAStarBi
 from algo.kastar_backward import KAStarBackward
 from logic import u_grid_blocks
+from logic import u_grid
 from logic import u_points
 from f_utils import u_file
 from f_utils import u_pickle
@@ -268,12 +269,13 @@ def create_backward(domain):
 def create_fe(domain):
     csv_fe = f_csv_fe.format(domain)
     u_file.write(csv_fe, 'domain, map, k, distance_start_goals, '
-                         'distance_goals, distance_rows, '
-                         'distance_cols, start_up, start_down, start_left,'
-                         'start_right, goals_up, goals_down, goals_left,'
-                         'goals_right\n')
+                         'distance_goals, distance_rows, distance_cols, '
+                         'start_up, start_right, start_down, start_left, '
+                         'goals_up, goals_right, goals_down, goals_left\n')
+    d_grids = u_pickle.load(pickle_grids)
     d_sg = u_pickle.load(f_pickle_sg.format(domain))
     for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
         for k in sorted(d_sg[domain][map]):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
@@ -282,7 +284,18 @@ def create_fe(domain):
                     distance_goals = u_points.distances(goals)
                     distance_rows = u_points.distance_rows([start], goals)
                     distance_cols = u_points.distance_cols([start], goals)
-
+                    offsets = u_grid.offsets(grid, start)
+                    start_up, start_right, start_down, start_left = offsets
+                    offsets = u_grid.offsets(grid, goals)
+                    goals_up, goals_right, goals_down, goals_left = offsets
+                    u_file.append(csv_fe, f'{domain},{map},{k},'
+                                          f'{distance_start_goals},'
+                                          f'{distance_goals},{distance_rows},'
+                                          f'{distance_cols},{start_up},'
+                                          f'{start_right},{start_down},'
+                                          f'{start_left},{goals_up},'
+                                          f'{goals_right},{goals_down},'
+                                          f'{goals_left}\n')
 
 
 # create_grids()
@@ -309,6 +322,12 @@ def create_fe(domain):
 # create_backward('rooms')
 # create_backward('games')
 # create_backward('cities')
+# create_fe('mazes')
+create_fe('random')
+create_fe('rooms')
+create_fe('games')
+create_fe('cities')
+
 
 """
 # mazes maze512-1-0 2 500 9
