@@ -201,13 +201,14 @@ def create_forward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 9:
+                    if not i == 11:
                         continue
                     kastar = KAStarProjection(grid, start, goals)
                     kastar.run()
                     pickle = f_pickle_forward.format(domain, map, k,
                                                      distance, i)
-                    u_pickle.dump(kastar.closed, pickle)
+                    if not domain == 'mazes':
+                        u_pickle.dump(kastar.closed, pickle)
                     nodes = len(kastar.closed)
                     file = open(f_csv_forward.format(domain), 'a')
                     file.write(f'{domain},{map},{k},{distance},{i},{nodes}\n')
@@ -228,7 +229,7 @@ def create_bi(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 0:
+                    if not i == 10:
                         continue
                     kastar = KAStarBi(grid, start, goals)
                     kastar.run()
@@ -254,7 +255,7 @@ def create_backward(domain):
             for distance in sorted(d_sg[domain][map][k]):
                 li_sg = d_sg[domain][map][k][distance]
                 for i, (start, goals) in enumerate(li_sg):
-                    if not i == 0:
+                    if not i == 10:
                         continue
                     kastar = KAStarBackward(grid, start, goals, lookup=dict())
                     kastar.run()
@@ -268,10 +269,11 @@ def create_backward(domain):
 
 
 def create_fe_raw():
-    u_file.write(csv_fe_raw, 'domain, map, k, i, distance_start_goals, '
-                         'distance_goals, distance_rows, distance_cols, '
-                         'start_up, start_right, start_down, start_left, '
-                         'goals_up, goals_right, goals_down, goals_left\n')
+    u_file.write(csv_fe_raw, 'domain, map, k, i, distance, '
+                             'distance_start_goals, distance_goals, '
+                             'distance_rows, distance_cols, start_up, '
+                             'start_right, start_down, start_left, goals_up, '
+                             'goals_right, goals_down, goals_left\n')
     d_grids = u_pickle.load(pickle_grids)
     for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
         d_sg = u_pickle.load(f_pickle_sg.format(domain))
@@ -289,14 +291,34 @@ def create_fe_raw():
                         start_up, start_right, start_down, start_left = offsets
                         offsets = u_grid.offsets(grid, goals)
                         goals_up, goals_right, goals_down, goals_left = offsets
-                        u_file.append(csv_fe_raw, f'{domain},{map},{k}, {i}'
-                                              f'{distance_start_goals},'
-                                              f'{distance_goals},{distance_rows},'
-                                              f'{distance_cols},{start_up},'
-                                              f'{start_right},{start_down},'
-                                              f'{start_left},{goals_up},'
-                                              f'{goals_right},{goals_down},'
-                                              f'{goals_left}\n')
+                        line_values = f'{domain},{map},{k},{i},{distance},' \
+                                 f'{distance_start_goals},' \
+                                 f'{distance_goals},{distance_rows},' \
+                                 f'{distance_cols},{start_up},{start_right},' \
+                                 f'{start_down},{start_left},{goals_up},' \
+                                 f'{goals_right},{goals_down},{goals_left}\n'
+                        u_file.append(csv_fe_raw, line_values)
+
+
+def union_results():
+    df_array = dict()
+    for algo in {'forward', 'bi', 'backward'}:
+        df_array[algo] = pd.DataFrame({'domain': [], 'map': [], 'k': [],
+                               'distance': [], 'i': [], 'nodes': []})
+        for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
+            for i in range(10):
+                dir_results = f'{dir_storage}i {i}'
+                csv = f'{dir_results}\\{algo}_{domain}.csv'
+                df_cur = pd.read_csv(csv)
+                df_array[algo] = df_array[algo].append(df_cur)
+        df_array[algo] = df_array[algo].rename(columns={'nodes': algo})
+        df_array[algo] = df_array[algo].drop_duplicates()
+        df_array[algo].to_csv(f'{dir_storage}{algo}.csv')
+    index = ['domain', 'map', 'k', 'distance', 'i']
+    df_all = df_array['forward'].join(df_array['bi'].set_index(index), on=index)
+    df_all = df_all.join(df_array['backward'].set_index(index), on=index)
+    df_all.to_csv(f'{dir_storage}results.csv')
+
 
 
 def create_fe_targets():
@@ -335,6 +357,7 @@ def create_fe_dummies():
 # create_backward('cities')
 # create_fe_raw()
 # create_fe_dummies()
+# union_results()
 
 
 """
