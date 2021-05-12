@@ -306,7 +306,7 @@ def union_results():
         df_array[algo] = pd.DataFrame({'domain': [], 'map': [], 'k': [],
                                'distance': [], 'i': [], 'nodes': []})
         for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
-            for i in range(10):
+            for i in range(12):
                 dir_results = f'{dir_storage}i {i}'
                 csv = f'{dir_results}\\{algo}_{domain}.csv'
                 df_cur = pd.read_csv(csv)
@@ -357,7 +357,7 @@ def create_fe_dummies():
 # create_backward('cities')
 # create_fe_raw()
 # create_fe_dummies()
-# union_results()
+union_results()
 
 
 """
