@@ -10,6 +10,8 @@ from logic import u_points
 from f_utils import u_file
 from f_utils import u_pickle
 from f_ds import u_df
+from f_db.c_sqlite import Sqlite
+from f_ds import u_rfr
 import pandas as pd
 
 
@@ -31,11 +33,17 @@ f_csv_forward = dir_storage + 'forward_{0}.csv'
 f_csv_bi = dir_storage + 'bi_{0}.csv'
 f_csv_backward = dir_storage + 'backward_{0}.csv'
 csv_results = dir_storage + 'results.csv'
+csv_results_best = dir_storage + 'results_best.csv'
 csv_fe_raw = dir_storage + 'fe_raw.csv'
 csv_fe_results = dir_storage + 'fe_results.csv'
 csv_fe_dummies = dir_storage + 'fe_dummies.csv'
-csv_train = dir_storage + 'train.csv'
-csv_test = dir_storage + 'test.csv'
+f_csv_x_train = dir_storage + 'x_train_{0}.csv'
+f_csv_y_train = dir_storage + 'y_train_{0}.csv'
+f_csv_x_test = dir_storage + 'x_test_{0}.csv'
+f_csv_y_test = dir_storage + 'y_test_{0}.csv'
+f_pickle_model = dir_storage + 'model_{0}.pickle'
+f_csv_pred = dir_storage + 'pred_{0}.csv'
+
 
 def create_grids():
     d_grids = defaultdict(dict)
@@ -289,7 +297,78 @@ def union_results():
     index = ['domain', 'map', 'k', 'distance', 'i']
     df_all = df_array['forward'].join(df_array['bi'].set_index(index), on=index)
     df_all = df_all.join(df_array['backward'].set_index(index), on=index)
-    df_all.to_csv(f'{dir_storage}results.csv')
+    df_all.to_csv(csv_results)
+
+
+def best_results():
+    df_results = pd.read_csv(csv_results)
+    sql = Sqlite()
+    sql.load(df=df_results, tname='temp_1')
+    query = """
+                select
+                    t1.*,
+                    round(forward / min(bi,backward), 2) as delta
+                from
+                    temp_1 t1
+            """
+    sql.ctas(tname='temp_2', query=query)
+    query = """
+                select
+                    t1.*,
+                    row_number() over
+                        (order by domain, map, k, distance, delta) as rownum
+                    from
+                        temp_2 t1
+            """
+    sql.ctas(tname='temp_3', query=query)
+    query = """
+                select
+                    t1.*,
+                    count(*) as r
+                from
+                    temp_3 t1,
+                    temp_3 t2
+                where
+                    t1.domain = t2.domain
+                    and
+                    t1.map = t2.map
+                    and
+                    t1.k = t2.k
+                    and
+                    t1.distance = t2.distance
+                    and
+                    t1.rownum >= t2.rownum
+                group by
+                    t1.domain,
+                    t1.map,
+                    t1.k,
+                    t1.distance,
+                    t1.i,
+                    t1.forward,
+                    t1.bi,
+                    t1.backward,
+                    t1.delta,
+                    t1.rownum
+            """
+    sql.ctas(tname='temp_4', query=query)
+    query = """
+                select
+                    domain,
+                    map,
+                    k,
+                    distance,
+                    i,
+                    forward,
+                    bi,
+                    backward
+                from
+                    temp_4
+                where
+                    r >= 3
+                """
+    df_results_best = sql.select(query)
+    df_results_best.to_csv(csv_results_best)
+    sql.close()
 
 
 def create_fe_raw():
@@ -330,22 +409,90 @@ def join_results_fe_raw():
     index = ['domain', 'map', 'k', 'distance', 'i']
     df_join = df_results.join(df_fe_raw.set_index(index), on=index)
     df_join = df_join.drop(df_join.columns[0], axis=1)
-    df_join.to_csv(csv_fe_results)
+    df_join.to_csv(csv_fe_results, index=False)
 
 
 def create_fe_dummies():
     df = pd.read_csv(csv_fe_results)
     df = pd.get_dummies(df)
-    df = df.drop(df.columns[0], axis=1)
-    df.to_csv(csv_fe_dummies)
+    df = df.drop(['distance', 'i'], axis=1)
+    df.to_csv(csv_fe_dummies, index=False)
 
 
 def create_train_test():
     df = pd.read_csv(csv_fe_dummies)
+    cols_features = list(df.columns)
+    cols_features.remove('forward')
+    cols_features.remove('bi')
+    cols_features.remove('backward')
     df_train, df_test = u_df.split_random(df, percent=75)
-    df_train.to_csv(csv_train)
-    df_test.to_csv(csv_test)
+    df_train_forward = df_train.drop(['bi', 'backward'], axis=1)
+    x_train_forward, y_train_forward = u_df.split_to_x_y(df_train_forward,
+                                                         cols_features,
+                                                         col_label='forward')
+    df_test_forward = df_test.drop(['bi', 'backward'], axis=1)
+    x_test_forward, y_test_forward = u_df.split_to_x_y(df_test_forward,
+                                                       cols_features,
+                                                       col_label='forward')
+    df_train_bi = df_train.drop(['forward', 'backward'], axis=1)
+    x_train_bi, y_train_bi = u_df.split_to_x_y(df_train_bi,
+                                               cols_features,
+                                               col_label='bi')
+    df_test_bi = df_test.drop(['forward', 'backward'], axis=1)
+    x_test_bi, y_test_bi = u_df.split_to_x_y(df_test_bi,
+                                             cols_features,
+                                             col_label='bi')
+    df_train_backward = df_train.drop(['forward', 'bi'], axis=1)
+    x_train_backward, y_train_backward = u_df.split_to_x_y(df_train_backward,
+                                                           cols_features,
+                                                           col_label='backward')
+    df_test_backward = df_test.drop(['forward', 'bi'], axis=1)
+    x_test_backward, y_test_backward = u_df.split_to_x_y(df_test_backward,
+                                                         cols_features,
+                                                         col_label='backward')
+    x_train_forward.to_csv(f_csv_x_train.format('forward'), index=False)
+    y_train_forward.to_csv(f_csv_y_train.format('forward'), index=False)
+    x_test_forward.to_csv(f_csv_x_test.format('forward'), index=False)
+    y_test_forward.to_csv(f_csv_y_test.format('forward'), index=False)
+    x_train_bi.to_csv(f_csv_x_train.format('bi'), index=False)
+    y_train_bi.to_csv(f_csv_y_train.format('bi'), index=False)
+    x_test_bi.to_csv(f_csv_x_test.format('bi'), index=False)
+    y_test_bi.to_csv(f_csv_y_test.format('bi'), index=False)
+    x_train_backward.to_csv(f_csv_x_train.format('backward'), index=False)
+    y_train_backward.to_csv(f_csv_y_train.format('backward'), index=False)
+    x_test_backward.to_csv(f_csv_x_test.format('backward'), index=False)
+    y_test_backward.to_csv(f_csv_y_test.format('backward'), index=False)
 
+
+def create_model(algo):
+    x_train = pd.read_csv(f_csv_x_train.format(algo))
+    y_train = pd.read_csv(f_csv_y_train.format(algo))
+    model = u_rfr.create_model(x_train, y_train, verbose=2)
+    u_pickle.dump(model, f_pickle_model.format(algo))
+
+
+def predict(algo):
+    model = u_pickle.load(f_pickle_model.format(algo))
+    x_test = pd.read_csv(f_csv_x_test.format(algo))
+    y_test = pd.read_csv(f_csv_y_test.format(algo))
+    y_pred = u_rfr.predict(model, x_test)
+    y_pred = pd.DataFrame(y_pred)
+    y_pred.columns = ['pred']
+    y_test['pred'] = y_pred['pred']
+    y_test.to_csv(f_csv_pred.format(algo))
+
+
+def join_pred():
+    pred_forward = pd.read_csv(f_csv_pred.format('forward'))
+    pred_bi = pd.read_csv(f_csv_pred.format('bi'))
+    pred_backward = pd.read_csv(f_csv_pred.format('backward'))
+    df_all = pred_forward.rename(columns={'label': 'forward',
+                                          'pred': 'pred_forward'})
+    df_all['bi'] = pred_bi['label']
+    df_all['pred_bi'] = pred_bi['pred']
+    df_all['backward'] = pred_backward['label']
+    df_all['pred_backward'] = pred_backward['pred']
+    df_all.to_csv(f_csv_pred.format('all'))
 
 # create_grids()
 # print_grids()
@@ -372,7 +519,15 @@ def create_train_test():
 # create_backward('games')
 # create_backward('cities')
 # union_results()
+# best_results()
 # create_fe_raw()
-# join_results_fe_raw()
-# create_fe_dummies()
+join_results_fe_raw()
+create_fe_dummies()
 create_train_test()
+create_model('forward')
+create_model('bi')
+create_model('backward')
+predict('forward')
+predict('bi')
+predict('backward')
+join_pred()
