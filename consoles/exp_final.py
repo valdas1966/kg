@@ -33,7 +33,7 @@ f_csv_forward = dir_storage + 'forward_{0}.csv'
 f_csv_bi = dir_storage + 'bi_{0}.csv'
 f_csv_backward = dir_storage + 'backward_{0}.csv'
 csv_results = dir_storage + 'results.csv'
-csv_results_best = dir_storage + 'results_best.csv'
+# csv_results_best = dir_storage + 'results_best.csv'
 csv_fe_raw = dir_storage + 'fe_raw.csv'
 csv_fe_results = dir_storage + 'fe_results.csv'
 csv_fe_dummies = dir_storage + 'fe_dummies.csv'
@@ -466,6 +466,8 @@ def create_train_test():
 
 def create_model(algo):
     x_train = pd.read_csv(f_csv_x_train.format(algo))
+    x_train = x_train.loc[:, ~x_train.columns.str.startswith('map_')]
+    x_train = x_train.loc[:, ~x_train.columns.str.startswith('domain_')]
     y_train = pd.read_csv(f_csv_y_train.format(algo))
     model = u_rfr.create_model(x_train, y_train, verbose=2)
     u_pickle.dump(model, f_pickle_model.format(algo))
@@ -474,6 +476,8 @@ def create_model(algo):
 def predict(algo):
     model = u_pickle.load(f_pickle_model.format(algo))
     x_test = pd.read_csv(f_csv_x_test.format(algo))
+    x_test = x_test.loc[:, ~x_test.columns.str.startswith('map_')]
+    x_test = x_test.loc[:, ~x_test.columns.str.startswith('domain_')]
     y_test = pd.read_csv(f_csv_y_test.format(algo))
     y_pred = u_rfr.predict(model, x_test)
     y_pred = pd.DataFrame(y_pred)
@@ -521,9 +525,9 @@ def join_pred():
 # union_results()
 # best_results()
 # create_fe_raw()
-join_results_fe_raw()
-create_fe_dummies()
-create_train_test()
+# join_results_fe_raw()
+# create_fe_dummies()
+# create_train_test()
 create_model('forward')
 create_model('bi')
 create_model('backward')
