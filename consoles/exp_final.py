@@ -498,6 +498,7 @@ def join_pred():
     df_all['pred_backward'] = pred_backward['pred']
     df_all.to_csv(f_csv_pred.format('all'))
 
+
 # create_grids()
 # print_grids()
 # create_grids_final()
@@ -528,10 +529,14 @@ def join_pred():
 # join_results_fe_raw()
 # create_fe_dummies()
 # create_train_test()
-create_model('forward')
-create_model('bi')
-create_model('backward')
-predict('forward')
-predict('bi')
-predict('backward')
-join_pred()
+# create_model('forward')
+# create_model('bi')
+# create_model('backward')
+# predict('forward')
+# predict('bi')
+# predict('backward')
+# join_pred()
+
+model = u_pickle.load(f_pickle_model.format('backward'))
+for x in model.feature_importances_:
+    print(x)
