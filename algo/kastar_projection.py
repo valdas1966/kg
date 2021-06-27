@@ -51,4 +51,3 @@ class KAStarProjection:
                 break
             self.opened = astar.opened
             self.closed = astar.closed
-

@@ -32,6 +32,7 @@ f_csv_found = dir_storage + 'found_{0}.csv'
 f_csv_forward = dir_storage + 'forward_{0}.csv'
 f_csv_bi = dir_storage + 'bi_{0}.csv'
 f_csv_backward = dir_storage + 'backward_{0}.csv'
+f_csv_regret = dir_storage + 'regret_{0}.csv'
 csv_results = dir_storage + 'results.csv'
 # csv_results_best = dir_storage + 'results_best.csv'
 csv_fe_raw = dir_storage + 'fe_raw.csv'
@@ -228,6 +229,54 @@ def create_forward(domain):
                     print(datetime.datetime.now(), domain, map, k, distance, i)
 
 
+def create_forward_mazes():
+    domain = 'mazes'
+    d_grids = u_pickle.load(pickle_grids_final)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    pickle = f_pickle_forward.format(domain, map, k,
+                                                     distance, i)
+                    if u_file.is_exists(pickle):
+                        continue
+                    kastar = KAStarProjection(grid, start, goals)
+                    kastar.run()
+                    u_pickle.dump(kastar.closed, pickle)
+                    print(datetime.datetime.now(), domain, map, k, distance, i)
+
+
+def create_regret(domain):
+    print('regret', domain)
+    file = open(f_csv_regret.format(domain), 'w')
+    file.write('domain,map,k,distance,i,first_h,first_g,first_closed,'
+               'first_opened\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids_final)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    goal = list(u_points.nearest(start, goals).keys())[0]
+                    astar = AStar(grid, start, goal)
+                    astar.run()
+                    first_h = start.distance(goal)
+                    first_g = astar.best.g
+                    first_closed = len(astar.closed)
+                    first_opened = len(astar.opened._opened)
+                    file = open(f_csv_regret.format(domain), 'a')
+                    file.write(f'{domain},{map},{k},{distance},{i},{first_h},'
+                               f'{first_g},{first_closed},{first_opened}\n')
+                    file.close()
+                    print(datetime.datetime.now(), domain, map, k, distance, i)
+
+
 def create_bi(domain):
     print('bi', domain)
     file = open(f_csv_bi.format(domain), 'w')
@@ -372,7 +421,7 @@ def best_results():
 
 
 def create_fe_raw():
-    u_file.write(csv_fe_raw, 'domain,map,k,i,distance,'
+    u_file.write(csv_fe_raw, 'domain,map,k,i,distance,rows,cols,points,'
                              'distance_start_goals,distance_goals,'
                              'distance_rows,distance_cols,start_up,'
                              'start_right,start_down,start_left,goals_up,'
@@ -395,11 +444,15 @@ def create_fe_raw():
                         offsets = u_grid.offsets(grid, goals)
                         goals_up, goals_right, goals_down, goals_left = offsets
                         line_values = f'{domain},{map},{k},{i},{distance},' \
-                                 f'{distance_start_goals},' \
-                                 f'{distance_goals},{distance_rows},' \
-                                 f'{distance_cols},{start_up},{start_right},' \
-                                 f'{start_down},{start_left},{goals_up},' \
-                                 f'{goals_right},{goals_down},{goals_left}\n'
+                                      f'{grid.rows},{grid.cols},' \
+                                      f'{len(grid.points())}' \
+                                      f'{distance_start_goals},' \
+                                      f'{distance_goals},{distance_rows},' \
+                                      f'{distance_cols},{start_up},' \
+                                      f'{start_right},{start_down},' \
+                                      f'{start_left},{goals_up},' \
+                                      f'{goals_right},{goals_down},' \
+                                      f'{goals_left}\n'
                         u_file.append(csv_fe_raw, line_values)
 
 
@@ -536,7 +589,9 @@ def join_pred():
 # predict('bi')
 # predict('backward')
 # join_pred()
-
-model = u_pickle.load(f_pickle_model.format('backward'))
-for x in model.feature_importances_:
-    print(x)
+# create_forward_mazes()
+# create_regret('cities')
+# create_regret('games')
+# create_regret('mazes')
+# create_regret('random')
+# create_regret('rooms')
