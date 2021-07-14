@@ -10,7 +10,7 @@ from logic import u_points
 from f_utils import u_file
 from f_utils import u_pickle
 from f_ds import u_df
-from f_db.c_sqlite import Sqlite
+from f_db.c_sqlite import SQLite
 from f_ds import u_rfr
 import pandas as pd
 
@@ -351,7 +351,7 @@ def union_results():
 
 def best_results():
     df_results = pd.read_csv(csv_results)
-    sql = Sqlite()
+    sql = SQLite()
     sql.load(df=df_results, tname='temp_1')
     query = """
                 select
@@ -421,11 +421,23 @@ def best_results():
 
 
 def create_fe_raw():
-    u_file.write(csv_fe_raw, 'domain,map,k,i,distance,rows,cols,points,'
-                             'distance_start_goals,distance_goals,'
-                             'distance_rows,distance_cols,start_up,'
-                             'start_right,start_down,start_left,goals_up,'
-                             'goals_right,goals_down,goals_left\n')
+    u_file.write(csv_fe_raw, 'domain,map,k,i,distance,rows,cols,points_valid,'
+                             'distance_start_goals,'
+                             'distance_start_goals_points_valid,'
+                             'distance_start_goals_rows,'
+                             'distance_start_goals_rows_rows,'
+                             'distance_start_goals_cols,'                             
+                             'distance_start_goals_cols_cols,'
+                             'distance_goals,'                             
+                             'distance_goals_points_valid,'
+                             'start_up,start_up_rows,'
+                             'start_right,start_right_cols,'
+                             'start_down,start_down_rows,'
+                             'start_left,start_left_cols,'
+                             'goals_up,goals_up_rows'
+                             'goals_right,goals_right_cols,'
+                             'goals_down,goals_down_rows'
+                             'goals_left,goals_left_cols\n')
     d_grids = u_pickle.load(pickle_grids)
     for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
         d_sg = u_pickle.load(f_pickle_sg.format(domain))
@@ -443,16 +455,43 @@ def create_fe_raw():
                         start_up, start_right, start_down, start_left = offsets
                         offsets = u_grid.offsets(grid, goals)
                         goals_up, goals_right, goals_down, goals_left = offsets
-                        line_values = f'{domain},{map},{k},{i},{distance},' \
-                                      f'{grid.rows},{grid.cols},' \
-                                      f'{len(grid.points())}' \
-                                      f'{distance_start_goals},' \
-                                      f'{distance_goals},{distance_rows},' \
-                                      f'{distance_cols},{start_up},' \
-                                      f'{start_right},{start_down},' \
-                                      f'{start_left},{goals_up},' \
-                                      f'{goals_right},{goals_down},' \
-                                      f'{goals_left}\n'
+                        li_features = list()
+                        li_features.append(domain)
+                        li_features.append(map)
+                        li_features.append(k)
+                        li_features.append(i)
+                        li_features.append(distance)
+                        li_features.append(grid.rows)
+                        li_features.append(grid.cols)
+                        li_features.append(len(grid.points()))
+                        li_features.append(distance_start_goals)
+                        li_features.append(round(distance_start_goals/len(
+                            grid.points()), 2))
+                        li_features.append(distance_goals)
+                        li_features.append(round(distance_goals/len(
+                            grid.points()), 2))
+                        li_features.append(distance_rows)
+                        li_features.append(round(distance_rows/grid.rows, 2))
+                        li_features.append(distance_cols)
+                        li_features.append(round(distance_cols/grid.cols, 2))
+                        li_features.append(start_up)
+                        li_features.append(round(start_up/grid.rows, 2))
+                        li_features.append(start_right)
+                        li_features.append(round(start_right/grid.cols, 2))
+                        li_features.append(start_down)
+                        li_features.append(round(start_down/grid.rows, 2))
+                        li_features.append(start_left)
+                        li_features.append(round(start_left/grid.cols, 2))
+                        li_features.append(goals_up)
+                        li_features.append(round(goals_up / grid.rows, 2))
+                        li_features.append(goals_right)
+                        li_features.append(round(goals_right / grid.cols, 2))
+                        li_features.append(goals_down)
+                        li_features.append(round(goals_down / grid.rows, 2))
+                        li_features.append(goals_left)
+                        li_features.append(round(goals_left / grid.cols, 2))
+                        li_features = [str(x) for x in li_features]
+                        line_values = f'{",".join(li_features)}\n'
                         u_file.append(csv_fe_raw, line_values)
 
 
@@ -578,7 +617,7 @@ def join_pred():
 # create_backward('cities')
 # union_results()
 # best_results()
-# create_fe_raw()
+create_fe_raw()
 # join_results_fe_raw()
 # create_fe_dummies()
 # create_train_test()
