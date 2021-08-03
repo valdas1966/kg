@@ -10,7 +10,6 @@ from logic import u_points
 from f_utils import u_file
 from f_utils import u_pickle
 from f_ds import u_df
-from f_db.c_sqlite import SQLite
 from f_ds import u_rfr
 import pandas as pd
 
@@ -36,6 +35,7 @@ f_csv_regret = dir_storage + 'regret_{0}.csv'
 csv_results = dir_storage + 'results.csv'
 # csv_results_best = dir_storage + 'results_best.csv'
 csv_fe_raw = dir_storage + 'fe_raw.csv'
+f_csv_fe_raw = dir_storage + 'fe_raw_{0}.csv'
 csv_fe_results = dir_storage + 'fe_results.csv'
 csv_fe_dummies = dir_storage + 'fe_dummies.csv'
 f_csv_x_train = dir_storage + 'x_train_{0}.csv'
@@ -44,6 +44,10 @@ f_csv_x_test = dir_storage + 'x_test_{0}.csv'
 f_csv_y_test = dir_storage + 'y_test_{0}.csv'
 f_pickle_model = dir_storage + 'model_{0}.pickle'
 f_csv_pred = dir_storage + 'pred_{0}.csv'
+
+maps_train = {'ost000t', 'ost100d', 'random512-30-7', 'random512-35-2',
+              'Paris_1_1024', 'Paris_2_1024', '8room_004', '8room_008',
+              'maze512-8-0', 'maze512-8-5'}
 
 
 def create_grids():
@@ -151,6 +155,7 @@ def create_sg(domain):
     u_pickle.dump(d_sg, f_pickle_sg.format(domain))
 
 
+"""
 def print_sg():
     def print_domain(file, pickle_sg):
         d_sg = u_pickle.load(pickle_sg)
@@ -166,7 +171,7 @@ def print_sg():
     print_domain(file, pickle_sg_random)
     print_domain(file, pickle_sg_rooms)
     file.close()
-
+"""
 
 def print_found(domain):
     print('check_is_found', domain)
@@ -349,150 +354,81 @@ def union_results():
     df_all.to_csv(csv_results)
 
 
-def best_results():
-    df_results = pd.read_csv(csv_results)
-    sql = SQLite()
-    sql.load(df=df_results, tname='temp_1')
-    query = """
-                select
-                    t1.*,
-                    round(forward / min(bi,backward), 2) as delta
-                from
-                    temp_1 t1
-            """
-    sql.ctas(tname='temp_2', query=query)
-    query = """
-                select
-                    t1.*,
-                    row_number() over
-                        (order by domain, map, k, distance, delta) as rownum
-                    from
-                        temp_2 t1
-            """
-    sql.ctas(tname='temp_3', query=query)
-    query = """
-                select
-                    t1.*,
-                    count(*) as r
-                from
-                    temp_3 t1,
-                    temp_3 t2
-                where
-                    t1.domain = t2.domain
-                    and
-                    t1.map = t2.map
-                    and
-                    t1.k = t2.k
-                    and
-                    t1.distance = t2.distance
-                    and
-                    t1.rownum >= t2.rownum
-                group by
-                    t1.domain,
-                    t1.map,
-                    t1.k,
-                    t1.distance,
-                    t1.i,
-                    t1.forward,
-                    t1.bi,
-                    t1.backward,
-                    t1.delta,
-                    t1.rownum
-            """
-    sql.ctas(tname='temp_4', query=query)
-    query = """
-                select
-                    domain,
-                    map,
-                    k,
-                    distance,
-                    i,
-                    forward,
-                    bi,
-                    backward
-                from
-                    temp_4
-                where
-                    r >= 3
-                """
-    df_results_best = sql.select(query)
-    df_results_best.to_csv(csv_results_best)
-    sql.close()
-
-
-def create_fe_raw():
-    u_file.write(csv_fe_raw, 'domain,map,k,i,distance,rows,cols,points_valid,'
-                             'distance_start_goals,'
-                             'distance_start_goals_points_valid,'
-                             'distance_start_goals_rows,'
-                             'distance_start_goals_rows_rows,'
-                             'distance_start_goals_cols,'                             
-                             'distance_start_goals_cols_cols,'
-                             'distance_goals,'                             
-                             'distance_goals_points_valid,'
-                             'start_up,start_up_rows,'
-                             'start_right,start_right_cols,'
-                             'start_down,start_down_rows,'
-                             'start_left,start_left_cols,'
-                             'goals_up,goals_up_rows'
-                             'goals_right,goals_right_cols,'
-                             'goals_down,goals_down_rows'
-                             'goals_left,goals_left_cols\n')
+def create_fe_raw(domain):
+    titles = 'domain,map,k,i,distance,rows,cols,points_valid,' \
+             'distance_start_goals,distance_start_goals_points_valid,' \
+             'distance_start_goals_rows,distance_start_goals_rows_rows,' \
+             'distance_start_goals_cols,distance_start_goals_cols_cols,' \
+             'distance_goals,distance_goals_points_valid,' \
+             'start_up,start_up_rows,start_right,start_right_cols,' \
+             'start_down,start_down_rows,start_left,start_left_cols,' \
+             'goals_up,goals_up_rows,goals_right,goals_right_cols,' \
+             'goals_down,goals_down_rows,goals_left,goals_left_cols\n'
+    u_file.write(f_csv_fe_raw.format(domain), titles)
     d_grids = u_pickle.load(pickle_grids)
-    for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
-        d_sg = u_pickle.load(f_pickle_sg.format(domain))
-        for map in sorted(d_sg[domain]):
-            grid = d_grids[domain][map]
-            for k in sorted(d_sg[domain][map]):
-                for distance in sorted(d_sg[domain][map][k]):
-                    li_sg = d_sg[domain][map][k][distance]
-                    for i, (start, goals) in enumerate(li_sg):
-                        distance_start_goals = u_points.distances_to(start, goals)
-                        distance_goals = u_points.distances(goals)
-                        distance_rows = u_points.distance_rows([start], goals)
-                        distance_cols = u_points.distance_cols([start], goals)
-                        offsets = u_grid.offsets(grid, start)
-                        start_up, start_right, start_down, start_left = offsets
-                        offsets = u_grid.offsets(grid, goals)
-                        goals_up, goals_right, goals_down, goals_left = offsets
-                        li_features = list()
-                        li_features.append(domain)
-                        li_features.append(map)
-                        li_features.append(k)
-                        li_features.append(i)
-                        li_features.append(distance)
-                        li_features.append(grid.rows)
-                        li_features.append(grid.cols)
-                        li_features.append(len(grid.points()))
-                        li_features.append(distance_start_goals)
-                        li_features.append(round(distance_start_goals/len(
-                            grid.points()), 2))
-                        li_features.append(distance_goals)
-                        li_features.append(round(distance_goals/len(
-                            grid.points()), 2))
-                        li_features.append(distance_rows)
-                        li_features.append(round(distance_rows/grid.rows, 2))
-                        li_features.append(distance_cols)
-                        li_features.append(round(distance_cols/grid.cols, 2))
-                        li_features.append(start_up)
-                        li_features.append(round(start_up/grid.rows, 2))
-                        li_features.append(start_right)
-                        li_features.append(round(start_right/grid.cols, 2))
-                        li_features.append(start_down)
-                        li_features.append(round(start_down/grid.rows, 2))
-                        li_features.append(start_left)
-                        li_features.append(round(start_left/grid.cols, 2))
-                        li_features.append(goals_up)
-                        li_features.append(round(goals_up / grid.rows, 2))
-                        li_features.append(goals_right)
-                        li_features.append(round(goals_right / grid.cols, 2))
-                        li_features.append(goals_down)
-                        li_features.append(round(goals_down / grid.rows, 2))
-                        li_features.append(goals_left)
-                        li_features.append(round(goals_left / grid.cols, 2))
-                        li_features = [str(x) for x in li_features]
-                        line_values = f'{",".join(li_features)}\n'
-                        u_file.append(csv_fe_raw, line_values)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    distance_start_goals = u_points.distances_to(start, goals)
+                    distance_goals = u_points.distances(goals)
+                    distance_rows = u_points.distance_rows([start], goals)
+                    distance_cols = u_points.distance_cols([start], goals)
+                    offsets = u_grid.offsets(grid, start)
+                    start_up, start_right, start_down, start_left = offsets
+                    offsets = u_grid.offsets(grid, goals)
+                    goals_up, goals_right, goals_down, goals_left = offsets
+                    li_features = list()
+                    li_features.append(domain)
+                    li_features.append(map)
+                    li_features.append(k)
+                    li_features.append(i)
+                    li_features.append(distance)
+                    li_features.append(grid.rows)
+                    li_features.append(grid.cols)
+                    li_features.append(len(grid.points()))
+                    li_features.append(distance_start_goals)
+                    li_features.append(round(distance_start_goals/len(
+                        grid.points()), 2))
+                    li_features.append(distance_goals)
+                    li_features.append(round(distance_goals/len(
+                        grid.points()), 2))
+                    li_features.append(distance_rows)
+                    li_features.append(round(distance_rows/grid.rows, 2))
+                    li_features.append(distance_cols)
+                    li_features.append(round(distance_cols/grid.cols, 2))
+                    li_features.append(start_up)
+                    li_features.append(round(start_up/grid.rows, 2))
+                    li_features.append(start_right)
+                    li_features.append(round(start_right/grid.cols, 2))
+                    li_features.append(start_down)
+                    li_features.append(round(start_down/grid.rows, 2))
+                    li_features.append(start_left)
+                    li_features.append(round(start_left/grid.cols, 2))
+                    li_features.append(goals_up)
+                    li_features.append(round(goals_up / grid.rows, 2))
+                    li_features.append(goals_right)
+                    li_features.append(round(goals_right / grid.cols, 2))
+                    li_features.append(goals_down)
+                    li_features.append(round(goals_down / grid.rows, 2))
+                    li_features.append(goals_left)
+                    li_features.append(round(goals_left / grid.cols, 2))
+                    li_features = [str(x) for x in li_features]
+                    line_values = f'{",".join(li_features)}\n'
+                    u_file.append(f_csv_fe_raw.format(domain), line_values)
+                    print(domain, map, k, distance, i)
+
+
+def union_fe_raw():
+    df = pd.read_csv(f_csv_fe_raw.format('cities'))
+    df = df.append(pd.read_csv(f_csv_fe_raw.format('games')))
+    df = df.append(pd.read_csv(f_csv_fe_raw.format('mazes')))
+    df = df.append(pd.read_csv(f_csv_fe_raw.format('random')))
+    df = df.append(pd.read_csv(f_csv_fe_raw.format('rooms')))
+    df.to_csv(csv_fe_raw, index=False)
 
 
 def join_results_fe_raw():
@@ -507,6 +443,13 @@ def join_results_fe_raw():
 def create_fe_dummies():
     df = pd.read_csv(csv_fe_results)
     df = pd.get_dummies(df)
+    df = df.drop(['distance', 'i'], axis=1)
+    df.to_csv(csv_fe_dummies, index=False)
+
+
+def create_fe_dummies_map():
+    df = pd.read_csv(csv_fe_results)
+    df = pd.get_dummies(df, columns=['domain'])
     df = df.drop(['distance', 'i'], axis=1)
     df.to_csv(csv_fe_dummies, index=False)
 
@@ -556,6 +499,113 @@ def create_train_test():
     y_test_backward.to_csv(f_csv_y_test.format('backward'), index=False)
 
 
+def create_train_test_domain(domain):
+    df = pd.read_csv(csv_fe_dummies)
+    cols_features = list(df.columns)
+    cols_features.remove('forward')
+    cols_features.remove('bi')
+    cols_features.remove('backward')
+    df_train = df.loc[df[f'domain_{domain}'] == 0]
+    df_test = df.loc[df[f'domain_{domain}'] == 1]
+    df_train_forward = df_train.drop(['bi', 'backward'], axis=1)
+    x_train_forward, y_train_forward = u_df.split_to_x_y(df_train_forward,
+                                                         cols_features,
+                                                         col_label='forward')
+    df_test_forward = df_test.drop(['bi', 'backward'], axis=1)
+    x_test_forward, y_test_forward = u_df.split_to_x_y(df_test_forward,
+                                                       cols_features,
+                                                       col_label='forward')
+    df_train_bi = df_train.drop(['forward', 'backward'], axis=1)
+    x_train_bi, y_train_bi = u_df.split_to_x_y(df_train_bi,
+                                               cols_features,
+                                               col_label='bi')
+    df_test_bi = df_test.drop(['forward', 'backward'], axis=1)
+    x_test_bi, y_test_bi = u_df.split_to_x_y(df_test_bi,
+                                             cols_features,
+                                             col_label='bi')
+    df_train_backward = df_train.drop(['forward', 'bi'], axis=1)
+    x_train_backward, y_train_backward = u_df.split_to_x_y(df_train_backward,
+                                                           cols_features,
+                                                           col_label='backward')
+    df_test_backward = df_test.drop(['forward', 'bi'], axis=1)
+    x_test_backward, y_test_backward = u_df.split_to_x_y(df_test_backward,
+                                                         cols_features,
+                                                         col_label='backward')
+    dir_domain = dir_storage + '\\by domain\\' + domain
+    f_domain_csv_x_train = dir_domain + '\\x_train_{0}.csv'
+    f_domain_csv_x_test = dir_domain + '\\x_test_{0}.csv'
+    f_domain_csv_y_train = dir_domain + '\\y_train_{0}.csv'
+    f_domain_csv_y_test = dir_domain + '\\y_test_{0}.csv'
+    x_train_forward.to_csv(f_domain_csv_x_train.format('forward'), index=False)
+    y_train_forward.to_csv(f_domain_csv_y_train.format('forward'), index=False)
+    x_test_forward.to_csv(f_domain_csv_x_test.format('forward'), index=False)
+    y_test_forward.to_csv(f_domain_csv_y_test.format('forward'), index=False)
+    x_train_bi.to_csv(f_domain_csv_x_train.format('bi'), index=False)
+    y_train_bi.to_csv(f_domain_csv_y_train.format('bi'), index=False)
+    x_test_bi.to_csv(f_domain_csv_x_test.format('bi'), index=False)
+    y_test_bi.to_csv(f_domain_csv_y_test.format('bi'), index=False)
+    x_train_backward.to_csv(f_domain_csv_x_train.format('backward'),
+                            index=False)
+    y_train_backward.to_csv(f_domain_csv_y_train.format('backward'),
+                            index=False)
+    x_test_backward.to_csv(f_domain_csv_x_test.format('backward'), index=False)
+    y_test_backward.to_csv(f_domain_csv_y_test.format('backward'), index=False)
+
+
+def create_train_test_map():
+    df = pd.read_csv(csv_fe_dummies)
+    cols_features = list(df.columns)
+    cols_features.remove('forward')
+    cols_features.remove('bi')
+    cols_features.remove('backward')
+    cols_features.remove('map')
+    df_train = df.loc[~df['map'].isin(maps_train)]
+    df_test = df.loc[df['map'].isin(maps_train)]
+    df_train_forward = df_train.drop(['bi', 'backward'], axis=1)
+    x_train_forward, y_train_forward = u_df.split_to_x_y(df_train_forward,
+                                                         cols_features,
+                                                         col_label='forward')
+    df_test_forward = df_test.drop(['bi', 'backward'], axis=1)
+    x_test_forward, y_test_forward = u_df.split_to_x_y(df_test_forward,
+                                                       cols_features,
+                                                       col_label='forward')
+    df_train_bi = df_train.drop(['forward', 'backward'], axis=1)
+    x_train_bi, y_train_bi = u_df.split_to_x_y(df_train_bi,
+                                               cols_features,
+                                               col_label='bi')
+    df_test_bi = df_test.drop(['forward', 'backward'], axis=1)
+    x_test_bi, y_test_bi = u_df.split_to_x_y(df_test_bi,
+                                             cols_features,
+                                             col_label='bi')
+    df_train_backward = df_train.drop(['forward', 'bi'], axis=1)
+    x_train_backward, y_train_backward = u_df.split_to_x_y(df_train_backward,
+                                                           cols_features,
+                                                           col_label='backward')
+    df_test_backward = df_test.drop(['forward', 'bi'], axis=1)
+    x_test_backward, y_test_backward = u_df.split_to_x_y(df_test_backward,
+                                                         cols_features,
+                                                         col_label='backward')
+    dir_domain = dir_storage + '\\by map'
+    f_domain_csv_x_train = dir_domain + '\\x_train_{0}.csv'
+    f_domain_csv_x_test = dir_domain + '\\x_test_{0}.csv'
+    f_domain_csv_y_train = dir_domain + '\\y_train_{0}.csv'
+    f_domain_csv_y_test = dir_domain + '\\y_test_{0}.csv'
+    x_train_forward.to_csv(f_domain_csv_x_train.format('forward'), index=False)
+    y_train_forward.to_csv(f_domain_csv_y_train.format('forward'), index=False)
+    x_test_forward.to_csv(f_domain_csv_x_test.format('forward'), index=False)
+    y_test_forward.to_csv(f_domain_csv_y_test.format('forward'), index=False)
+    x_train_bi.to_csv(f_domain_csv_x_train.format('bi'), index=False)
+    y_train_bi.to_csv(f_domain_csv_y_train.format('bi'), index=False)
+    x_test_bi.to_csv(f_domain_csv_x_test.format('bi'), index=False)
+    y_test_bi.to_csv(f_domain_csv_y_test.format('bi'), index=False)
+    x_train_backward.to_csv(f_domain_csv_x_train.format('backward'),
+                            index=False)
+    y_train_backward.to_csv(f_domain_csv_y_train.format('backward'),
+                            index=False)
+    x_test_backward.to_csv(f_domain_csv_x_test.format('backward'), index=False)
+    y_test_backward.to_csv(f_domain_csv_y_test.format('backward'), index=False)
+
+
 def create_model(algo):
     x_train = pd.read_csv(f_csv_x_train.format(algo))
     x_train = x_train.loc[:, ~x_train.columns.str.startswith('map_')]
@@ -563,6 +613,30 @@ def create_model(algo):
     y_train = pd.read_csv(f_csv_y_train.format(algo))
     model = u_rfr.create_model(x_train, y_train, verbose=2)
     u_pickle.dump(model, f_pickle_model.format(algo))
+
+
+def create_model_domain(domain, algo):
+    dir_domain = dir_storage + '\\by domain\\' + domain
+    f_domain_csv_x_train = dir_domain + '\\x_train_{0}.csv'
+    f_domain_csv_y_train = dir_domain + '\\y_train_{0}.csv'
+    f_pickle_domain_model = dir_domain + '\\model_{0}.csv'
+    x_train = pd.read_csv(f_domain_csv_x_train.format(algo))
+    x_train = x_train.loc[:, ~x_train.columns.str.startswith('map_')]
+    x_train = x_train.loc[:, ~x_train.columns.str.startswith('domain_')]
+    y_train = pd.read_csv(f_domain_csv_y_train.format(algo))
+    model = u_rfr.create_model(x_train, y_train, verbose=2)
+    u_pickle.dump(model, f_pickle_domain_model.format(algo))
+
+
+def create_model_map(algo):
+    dir_domain = dir_storage + '\\by map'
+    f_domain_csv_x_train = dir_domain + '\\x_train_{0}.csv'
+    f_domain_csv_y_train = dir_domain + '\\y_train_{0}.csv'
+    f_pickle_domain_model = dir_domain + '\\model_{0}.csv'
+    x_train = pd.read_csv(f_domain_csv_x_train.format(algo))
+    y_train = pd.read_csv(f_domain_csv_y_train.format(algo))
+    model = u_rfr.create_model(x_train, y_train, verbose=2)
+    u_pickle.dump(model, f_pickle_domain_model.format(algo))
 
 
 def predict(algo):
@@ -578,6 +652,41 @@ def predict(algo):
     y_test.to_csv(f_csv_pred.format(algo))
 
 
+def predict_domain(domain, algo):
+    dir_domain = dir_storage + '\\by domain\\' + domain
+    f_domain_csv_x_test = dir_domain + '\\x_test_{0}.csv'
+    f_domain_csv_y_test = dir_domain + '\\y_test_{0}.csv'
+    f_pickle_domain_model = dir_domain + '\\model_{0}.csv'
+    f_domain_csv_pred = dir_domain + '\\pred_{0}.csv'
+    model = u_pickle.load(f_pickle_domain_model.format(algo))
+    x_test = pd.read_csv(f_domain_csv_x_test.format(algo))
+    x_test = x_test.loc[:, ~x_test.columns.str.startswith('map_')]
+    x_test = x_test.loc[:, ~x_test.columns.str.startswith('domain_')]
+    y_test = pd.read_csv(f_domain_csv_y_test.format(algo))
+    y_pred = u_rfr.predict(model, x_test)
+    y_pred = pd.DataFrame(y_pred)
+    y_pred.columns = ['pred']
+    y_test['pred'] = y_pred['pred']
+    y_test.to_csv(f_domain_csv_pred.format(algo))
+
+
+def predict_map():
+    dir_domain = dir_storage + '\\by map'
+    f_domain_csv_x_test = dir_domain + '\\x_test_{0}.csv'
+    f_domain_csv_y_test = dir_domain + '\\y_test_{0}.csv'
+    f_pickle_domain_model = dir_domain + '\\model_{0}.csv'
+    f_domain_csv_pred = dir_domain + '\\pred_{0}.csv'
+    for algo in {'forward', 'bi', 'backward'}:
+        model = u_pickle.load(f_pickle_domain_model.format(algo))
+        x_test = pd.read_csv(f_domain_csv_x_test.format(algo))
+        y_test = pd.read_csv(f_domain_csv_y_test.format(algo))
+        y_pred = u_rfr.predict(model, x_test)
+        y_pred = pd.DataFrame(y_pred)
+        y_pred.columns = ['pred']
+        y_test['pred'] = y_pred['pred']
+        y_test.to_csv(f_domain_csv_pred.format(algo))
+
+
 def join_pred():
     pred_forward = pd.read_csv(f_csv_pred.format('forward'))
     pred_bi = pd.read_csv(f_csv_pred.format('bi'))
@@ -589,6 +698,36 @@ def join_pred():
     df_all['backward'] = pred_backward['label']
     df_all['pred_backward'] = pred_backward['pred']
     df_all.to_csv(f_csv_pred.format('all'))
+
+
+def join_pred_domain(domain):
+    dir_domain = dir_storage + '\\by domain\\' + domain
+    f_domain_csv_pred = dir_domain + '\\pred_{0}.csv'
+    pred_forward = pd.read_csv(f_domain_csv_pred.format('forward'))
+    pred_bi = pd.read_csv(f_domain_csv_pred.format('bi'))
+    pred_backward = pd.read_csv(f_domain_csv_pred.format('backward'))
+    df_all = pred_forward.rename(columns={'label': 'forward',
+                                          'pred': 'pred_forward'})
+    df_all['bi'] = pred_bi['label']
+    df_all['pred_bi'] = pred_bi['pred']
+    df_all['backward'] = pred_backward['label']
+    df_all['pred_backward'] = pred_backward['pred']
+    df_all.to_csv(f_domain_csv_pred.format('all'))
+
+
+def join_pred_map():
+    dir_domain = dir_storage + '\\by map'
+    f_domain_csv_pred = dir_domain + '\\pred_{0}.csv'
+    pred_forward = pd.read_csv(f_domain_csv_pred.format('forward'))
+    pred_bi = pd.read_csv(f_domain_csv_pred.format('bi'))
+    pred_backward = pd.read_csv(f_domain_csv_pred.format('backward'))
+    df_all = pred_forward.rename(columns={'label': 'forward',
+                                          'pred': 'pred_forward'})
+    df_all['bi'] = pred_bi['label']
+    df_all['pred_bi'] = pred_bi['pred']
+    df_all['backward'] = pred_backward['label']
+    df_all['pred_backward'] = pred_backward['pred']
+    df_all.to_csv(f_domain_csv_pred.format('all'))
 
 
 # create_grids()
@@ -617,20 +756,44 @@ def join_pred():
 # create_backward('cities')
 # union_results()
 # best_results()
-create_fe_raw()
+# create_fe_raw('mazes')
+# create_fe_raw('random')
+# create_fe_raw('rooms')
+# create_fe_raw('games')
+# create_fe_raw('cities')
+# union_fe_raw()
 # join_results_fe_raw()
 # create_fe_dummies()
 # create_train_test()
+# create_train_test_domain('cities')
+# create_train_test_domain('games')
+# create_train_test_domain('mazes')
+# create_train_test_domain('random')
+# create_train_test_domain('rooms')
 # create_model('forward')
 # create_model('bi')
 # create_model('backward')
+# for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
+#    for algo in {'forward', 'bi', 'backward'}:
+#        create_model_domain(domain, algo)
 # predict('forward')
 # predict('bi')
 # predict('backward')
+# for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
+#     for algo in {'forward', 'bi', 'backward'}:
+#         predict_domain(domain, algo)
 # join_pred()
+# for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
+#    join_pred_domain(domain)
 # create_forward_mazes()
 # create_regret('cities')
 # create_regret('games')
 # create_regret('mazes')
 # create_regret('random')
 # create_regret('rooms')
+# create_fe_dummies_map()
+# create_train_test_map()
+# for algo in {'forward', 'bi', 'backward'}:
+#    create_model_map(algo)
+# predict_map()
+# join_pred_map()
