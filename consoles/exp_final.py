@@ -12,6 +12,7 @@ from f_utils import u_pickle
 from f_ds import u_df
 from f_ds import u_rfr
 import pandas as pd
+from sklearn.model_selection import GridSearchCV
 
 
 dir_maps = 'd:\\temp\\maps\\'
@@ -608,8 +609,8 @@ def create_train_test_map():
 
 def create_model(algo):
     x_train = pd.read_csv(f_csv_x_train.format(algo))
-    x_train = x_train.loc[:, ~x_train.columns.str.startswith('map_')]
-    x_train = x_train.loc[:, ~x_train.columns.str.startswith('domain_')]
+    # x_train = x_train.loc[:, ~x_train.columns.str.startswith('map_')]
+    # x_train = x_train.loc[:, ~x_train.columns.str.startswith('domain_')]
     y_train = pd.read_csv(f_csv_y_train.format(algo))
     model = u_rfr.create_model(x_train, y_train, verbose=2)
     u_pickle.dump(model, f_pickle_model.format(algo))
@@ -642,8 +643,8 @@ def create_model_map(algo):
 def predict(algo):
     model = u_pickle.load(f_pickle_model.format(algo))
     x_test = pd.read_csv(f_csv_x_test.format(algo))
-    x_test = x_test.loc[:, ~x_test.columns.str.startswith('map_')]
-    x_test = x_test.loc[:, ~x_test.columns.str.startswith('domain_')]
+    # x_test = x_test.loc[:, ~x_test.columns.str.startswith('map_')]
+    # x_test = x_test.loc[:, ~x_test.columns.str.startswith('domain_')]
     y_test = pd.read_csv(f_csv_y_test.format(algo))
     y_pred = u_rfr.predict(model, x_test)
     y_pred = pd.DataFrame(y_pred)
@@ -730,6 +731,23 @@ def join_pred_map():
     df_all.to_csv(f_domain_csv_pred.format('all'))
 
 
+def grid_search(algo):
+    model = u_pickle.load(f_pickle_model.format(algo))
+    x_train = pd.read_csv(f_csv_x_train.format(algo))
+    y_train = pd.read_csv(f_csv_y_train.format(algo))
+    n_estimators = [100, 300, 500, 800, 1200]
+    max_depth = [5, 8, 15, 25, 30]
+    min_samples_split = [2, 5, 10, 15, 100]
+    min_samples_leaf = [1, 2, 5, 10]
+
+    hyperF = dict(n_estimators=n_estimators, max_depth=max_depth,
+                  min_samples_split=min_samples_split,
+                  min_samples_leaf=min_samples_leaf)
+
+    gridF = GridSearchCV(model, hyperF, cv=3, verbose=1, n_jobs=-1)
+    bestF = gridF.fit(x_train, y_train)
+    u_pickle.dump(bestF, f_pickle_model.format(f'{algo}_bestgrid'))
+
 # create_grids()
 # print_grids()
 # create_grids_final()
@@ -797,3 +815,6 @@ def join_pred_map():
 #    create_model_map(algo)
 # predict_map()
 # join_pred_map()
+grid_search('forward')
+grid_search('bi')
+grid_search('backward')
