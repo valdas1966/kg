@@ -688,6 +688,19 @@ def predict_map():
         y_test.to_csv(f_domain_csv_pred.format(algo))
 
 
+def predict_bestgrid(algo):
+    model = u_pickle.load(f_pickle_model.format(f'{algo}_bestgrid'))
+    x_test = pd.read_csv(f_csv_x_test.format(algo))
+    # x_test = x_test.loc[:, ~x_test.columns.str.startswith('map_')]
+    # x_test = x_test.loc[:, ~x_test.columns.str.startswith('domain_')]
+    y_test = pd.read_csv(f_csv_y_test.format(algo))
+    y_pred = u_rfr.predict(model, x_test)
+    y_pred = pd.DataFrame(y_pred)
+    y_pred.columns = ['pred']
+    y_test['pred'] = y_pred['pred']
+    y_test.to_csv(f_csv_pred.format(f'{algo}_bestgrid'))
+
+
 def join_pred():
     pred_forward = pd.read_csv(f_csv_pred.format('forward'))
     pred_bi = pd.read_csv(f_csv_pred.format('bi'))
@@ -815,6 +828,9 @@ def grid_search(algo):
 #    create_model_map(algo)
 # predict_map()
 # join_pred_map()
-grid_search('forward')
-grid_search('bi')
-grid_search('backward')
+# grid_search('forward')
+# grid_search('bi')
+# grid_search('backward')
+predict_bestgrid('forward')
+predict_bestgrid('bi')
+predict_bestgrid('backward')
