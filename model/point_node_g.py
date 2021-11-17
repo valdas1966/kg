@@ -28,7 +28,7 @@ class Node(Point):
         self.goal = None
         self.w = 1
         self.g = 0
-        self.h = float('Infinity')
+        self.h = 0
         self.f = float('Infinity')
         self.is_lookup = False
 
@@ -86,7 +86,7 @@ class Node(Point):
          Description: Set Cost-Function (F = G + H).
         ========================================================================
         """
-        self.f = self.g + self.h
+        self.f = self.g
 
     def __lt__(self, other):
         """
