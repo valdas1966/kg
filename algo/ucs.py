@@ -14,17 +14,39 @@ class UCS:
         self.closed = set()
 
     def run(self):
-        self.opened = Opened
+        self.opened = Opened()
         self.closed = set()
-        self.start.update(father_cand=None, goal=self.goal)
-        self.opened.push(Node(self.start))
+        self.best = Node(self.start)
+        self.best.update(father_cand=None, goal=self.goal)
+        self.opened.push(self.best)
         while not self.opened.is_empty():
-            self.best = self.opened.get_best()
+            self.best = self.opened.pop()
             self.closed.add(self.best)
             if self.best == self.goal:
                 self.is_found = True
                 return
             self.__expand_best()
+
+    def optimal_path(self):
+        """
+        =======================================================================
+         Description: Return Optimal Path from Start to Goal.
+        =======================================================================
+         Return: List of Points.
+        =======================================================================
+        """
+        if not self.is_found:
+            return list()
+        node = self.best
+        path = [node]
+        while node != self.start:
+            node = node.father
+            path.append(node)
+        path.reverse()
+        return path
+
+    def expanded_nodes(self):
+        return len(self.closed) - 1
 
     def __expand_best(self):
         """
