@@ -18,7 +18,7 @@ class KUCS:
         self.opened = Opened()
         self.closed = set()
         self.best = Node(self.start)
-        self.best.update(father_cand=None, goal=self.goals[0])
+        self.best.update(father_cand=None, goal=list(self.goals)[0])
         self.opened.push(self.best)
         while not self.opened.is_empty():
             self.best = self.opened.pop()
@@ -47,4 +47,4 @@ class KUCS:
             else:
                 child = Node(child)
                 self.opened.push(child)
-            child.update(father_cand=self.best, goal=self.goals[0])
+            child.update(father_cand=self.best, goal=list(self.goals)[0])

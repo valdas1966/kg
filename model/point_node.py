@@ -66,7 +66,7 @@ class Node(Point):
             # set the candidate father as father
             self.father = father_cand
             self.g = g_cand
-            self.__set_f()
+            self.set_f()
 
     def set_h(self, true_distance=None):
         """
@@ -78,9 +78,9 @@ class Node(Point):
             self.h = true_distance
         else:
             self.h = self.distance(self.goal)
-        self.__set_f()
+        self.set_f()
 
-    def __set_f(self):
+    def set_f(self):
         """
         ========================================================================
          Description: Set Cost-Function (F = G + H).
