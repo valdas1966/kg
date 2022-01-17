@@ -27,7 +27,6 @@ class KAStarEager:
         self.opened.push(self.start)
         while not self.opened.is_empty():
             best = self.opened.pop()
-            print(best)
             self.closed.add(best)
             if best in self.active_goals:
                 self.active_goals.remove(best)
