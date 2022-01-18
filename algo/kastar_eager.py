@@ -34,6 +34,8 @@ class KAStarEager:
                     self.is_found = True
                     return
                 for node in self.opened.get_nodes():
+                    if not node.h == Point.distance(node, best):
+                        print(node.h, Point.distance(node, best))
                     node.update_active_goals(self.active_goals)
             self.__expand(best)
 
@@ -48,3 +50,15 @@ class KAStarEager:
                 child = NodeKA(point=child, active_goals=self.active_goals)
                 self.opened.push(child)
             child.update(father_cand=node)
+
+
+import random
+for _ in range(10):
+    percent_block = random.randint(30, 80)
+    grid = GridBlocks(rows=5, percent_blocks=percent_block)
+    cnt_goals = random.randint(2, 10)
+    points = grid.points_random(amount=cnt_goals+1)
+    start = points[0]
+    goals = points[1:]
+    ka = KAStarEager(grid, start, goals)
+    ka.run()
