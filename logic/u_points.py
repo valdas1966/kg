@@ -26,6 +26,18 @@ def nearest(point_a, points_b):
     return u_dict.sort_by_value(dict_points)
 
 
+def farthest(point_a, points):
+    distance_max = 0
+    point_farthest = None
+    for p in points:
+        distance = point_a.distance(p)
+        if distance > distance_max:
+            distance_max = distance
+            point_farthest = p
+    return point_farthest
+
+
+
 def distances_to(point_a, points_b):
     """
     ========================================================================
