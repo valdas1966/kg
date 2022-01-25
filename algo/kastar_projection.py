@@ -26,10 +26,10 @@ class KAStarProjection:
         assert len(goals) == len(set(goals))
         self.grid = grid
         self.start = start
-        #self.goals = u_points.nearest(start, goals)
+        self.goals = u_points.nearest(start, goals)
         #self.goals = u_points.farthest(start, goals)
-        self.goals = list(goals)
-        random.shuffle(self.goals)
+        #self.goals = list(goals)
+        #random.shuffle(self.goals)
         self.opened = Opened()
         self.closed = set()
         self.is_found = False
