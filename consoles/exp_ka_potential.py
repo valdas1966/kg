@@ -13,16 +13,21 @@ csv_agg = repo + 'agg.csv'
 
 def create_problems():
     problems = list()
-    for i in range(100000):
-        percent_blocks = random.randint(20, 80)
-        grid = GridBlocks(rows=10, percent_blocks=percent_blocks)
+    i = 0
+    while i < 100000:
+        grid = GridBlocks(rows=10, percent_blocks=20)
         cnt_goals = random.randint(2, 10)
         points = grid.points_random(amount=cnt_goals + 1)
         start = points[0]
         goals = points[1:]
-        problems.append((grid, start, goals, percent_blocks))
+        ka = KAStarProjection(grid, start, goals)
+        ka.run()
+        if not ka.is_found:
+            continue
+        problems.append((grid, start, goals))
         if not i % 1000:
             print(i)
+        i += 1
     u_pickle.dump(problems, pickle_problems)
 
 
@@ -61,6 +66,6 @@ def aggregate():
         sql.select(query, verbose=True).to_csv(csv_agg)
 
 
-# create_problems()
+create_problems()
 # run()
-aggregate()
+# aggregate()
