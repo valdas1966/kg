@@ -6,6 +6,7 @@ import random
 import pandas as pd
 
 repo = 'g:\\temp\\thesis\\exp ka potential\\'
+repo = 'd:\\temp\\write\\exp ka potential\\'
 pickle_problems = repo + 'problems.pickle'
 csv_results = repo + 'results.csv'
 csv_agg = repo + 'agg.csv'
@@ -34,14 +35,14 @@ def create_problems():
 def run():
     problems = u_pickle.load(pickle_problems)
     file = open(csv_results, 'w')
-    file.write('i,goals,blocks,closed,optimal\n')
+    file.write('i,goals,closed,optimal\n')
     for i, p in enumerate(problems):
-        grid, start, goals, blocks = p
+        grid, start, goals = p
         ka = KAStarProjection(grid, start, goals)
         ka.run()
         if not ka.is_found:
             continue
-        file.write(f'{i},{len(goals)},{blocks},{len(ka.closed)},'
+        file.write(f'{i},{len(goals)},{len(ka.closed)},'
                    f'{len(ka.optimal_nodes)}\n')
         if not i % 1000:
             print(i)
@@ -66,6 +67,6 @@ def aggregate():
         sql.select(query, verbose=True).to_csv(csv_agg)
 
 
-create_problems()
-# run()
+# create_problems()
+run()
 # aggregate()
