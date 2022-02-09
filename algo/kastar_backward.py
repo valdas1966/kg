@@ -57,3 +57,4 @@ class KAStarBackward:
 
     def expanded_nodes(self):
         return sum(self.closed.values())
+

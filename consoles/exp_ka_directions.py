@@ -2,7 +2,6 @@ from model.grid_blocks import GridBlocks
 from algo.kastar_projection import KAStarProjection
 from algo.kastar_bi import KAStarBi
 from algo.kastar_backward import KAStarBackward
-from algo.astar import AStar
 from f_utils import u_pickle
 from f_db.c_sqlite import SQLite
 import random
@@ -44,6 +43,10 @@ def run():
         ka_forward = KAStarProjection(grid, start, goals)
         ka_forward.run()
         forward = len(ka_forward.closed)
+        optimal_nodes = set()
+        for li in ka_forward.optimal_paths.values():
+            optimal_nodes.update(set(li))
+        optimal = len(optimal_nodes)
         ka_bi = KAStarBi(grid, start, goals)
         ka_bi.run()
         bi = ka_bi.expanded_nodes()
@@ -52,12 +55,6 @@ def run():
         backward = ka_backward.expanded_nodes()
         oracle = min(forward, bi, backward)
         winner = 'Forward'
-        optimal_nodes = set()
-        for goal in goals:
-            astar = AStar(grid, start, goal)
-            astar.run()
-            optimal_nodes.update(astar.optimal_path())
-
         if oracle == bi:
             winner = 'Bi'
         elif oracle == backward:

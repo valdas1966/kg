@@ -32,6 +32,7 @@ class KAStarProjection:
         self.opened = Opened()
         self.closed = set()
         self.is_found = False
+        self.optimal_paths = dict()
 
     def run(self):
         """
@@ -54,3 +55,4 @@ class KAStarProjection:
                 break
             self.opened = astar.opened
             self.closed = astar.closed
+            self.optimal_paths[goal] = astar.optimal_path()
