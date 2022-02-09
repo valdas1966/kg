@@ -61,3 +61,6 @@ class KAStarBi:
             return
         self.closed = kastar.closed
         self.closed.update(astar.closed)
+
+    def expanded_nodes(self):
+        return sum(self.closed.values())

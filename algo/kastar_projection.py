@@ -3,7 +3,6 @@ from model.grid_blocks import GridBlocks
 from model.opened import Opened
 from logic import u_points
 from algo.astar import AStar
-import random
 
 
 class KAStarProjection:

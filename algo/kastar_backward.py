@@ -7,7 +7,8 @@ from logic import u_points
 
 class KAStarBackward:
 
-    def __init__(self, grid, start, goals, lookup, type_next_goal='NEAREST'):
+    def __init__(self, grid, start, goals, lookup=dict(),
+                 type_next_goal='NEAREST'):
         """
         ========================================================================
          Description: Create KA*-Backward Algorithm (Use Optimal-Path Nodes
@@ -53,3 +54,6 @@ class KAStarBackward:
             li_closed = li_closed + list(astar.closed)
             self.lookup.update(astar.lookup_goal())
         self.closed = Counter(li_closed)
+
+    def expanded_nodes(self):
+        return sum(self.closed.values())
