@@ -32,7 +32,6 @@ class KAStarProjection:
         self.opened = Opened()
         self.closed = set()
         self.is_found = False
-        self.optimal_nodes = set()
 
     def run(self):
         """
@@ -53,6 +52,5 @@ class KAStarProjection:
             if not astar.is_found:
                 self.is_found = False
                 break
-            self.optimal_nodes.update(set(astar.optimal_path()))
             self.opened = astar.opened
             self.closed = astar.closed
