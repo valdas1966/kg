@@ -7,7 +7,7 @@ from logic import u_points
 
 class KAStarBackward:
 
-    def __init__(self, grid, start, goals, lookup=dict(),
+    def __init__(self, grid, start, goals, lookup=None,
                  type_next_goal='NEAREST'):
         """
         ========================================================================
@@ -23,6 +23,8 @@ class KAStarBackward:
             5. type_next_goal : str (Method to choose the next Goal)
         ========================================================================
         """
+        if lookup is None:
+            lookup = dict()
         assert issubclass(type(grid), Grid)
         assert type(start) == Point
         assert type(goals) in {tuple, list, set}

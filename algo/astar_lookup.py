@@ -37,7 +37,7 @@ class AStarLookup(AStar):
         self.best = Node(self.start)
         self.best.update(father_cand=None, goal=self.goal)
         self.opened.push(self.best)
-        while not self.opened.is_empty() and not self.is_found:
+        while not any((self.opened.is_empty(), self.is_found)):
             self.next_move()
 
     def next_move(self):
@@ -47,12 +47,12 @@ class AStarLookup(AStar):
         ========================================================================
         """
         self.best = self.opened.pop()
-        self.closed.add(self.best)
-        if self.best == self.goal:
-            self.is_found = True
         if self.best in self.lookup:
             self.is_found = True
-            self.closed.remove(self.best)
+        else:
+            self.closed.add(self.best)
+        if self.best == self.goal:
+            self.is_found = True
         self.__expand()
 
     def f_value(self):

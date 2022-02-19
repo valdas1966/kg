@@ -17,7 +17,7 @@ from sklearn.model_selection import GridSearchCV
 
 dir_maps = 'd:\\temp\\maps\\'
 dir_storage = 'd:\\temp\\final\\'
-# dir_storage = 'g:\\roni\\model\\'
+dir_storage = 'g:\\roni\\model\\'
 dir_forward = dir_storage + 'Forward\\'
 pickle_grids = dir_storage + 'grids.pickle'
 pickle_grids_final = dir_storage + 'grids_final.pickle'
@@ -45,6 +45,7 @@ f_csv_x_test = dir_storage + 'x_test_{0}.csv'
 f_csv_y_test = dir_storage + 'y_test_{0}.csv'
 f_pickle_model = dir_storage + 'model_{0}.pickle'
 f_csv_pred = dir_storage + 'pred_{0}.csv'
+f_csv_optimal = dir_storage + 'optimal_{0}.csv'
 
 maps_train = {'ost000t', 'ost100d', 'random512-30-7', 'random512-35-2',
               'Paris_1_1024', 'Paris_2_1024', '8room_004', '8room_008',
@@ -234,6 +235,32 @@ def create_forward(domain):
                     file.close()
                     print(datetime.datetime.now(), domain, map, k, distance, i)
 
+def create_optimal(domain):
+    print('optimal', domain)
+    file = open(f_csv_optimal.format(domain), 'w')
+    file.write('domain,map,k,distance,i,optimal,forward\n')
+    file.close()
+    d_grids = u_pickle.load(pickle_grids_final)
+    d_sg = u_pickle.load(f_pickle_sg.format(domain))
+    for map in sorted(d_sg[domain]):
+        grid = d_grids[domain][map]
+        for k in sorted(d_sg[domain][map]):
+            for distance in sorted(d_sg[domain][map][k]):
+                li_sg = d_sg[domain][map][k][distance]
+                for i, (start, goals) in enumerate(li_sg):
+                    kastar = KAStarProjection(grid, start, goals)
+                    kastar.run()
+                    forward = len(kastar.closed)
+                    optimal_nodes = set()
+                    for li in kastar.optimal_paths.values():
+                        optimal_nodes.update(set(li))
+                    optimal = len(optimal_nodes)
+                    file = open(f_csv_optimal.format(domain), 'a')
+                    file.write(f'{domain},{map},{k},{distance},{i},{optimal},'
+                               f'{forward}\n')
+                    file.close()
+                    print(datetime.datetime.now(), domain, map, k, distance, i)
+
 
 def create_forward_mazes():
     domain = 'mazes'
@@ -340,7 +367,8 @@ def union_results():
     for algo in {'forward', 'bi', 'backward'}:
         df_array[algo] = pd.DataFrame({'domain': [], 'map': [], 'k': [],
                                'distance': [], 'i': [], 'nodes': []})
-        for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
+        #for domain in {'cities', 'games', 'mazes', 'random', 'rooms'}:
+        for domain in {'mazes', 'random', 'rooms'}:
             for i in range(12):
                 dir_results = f'{dir_storage}i {i}'
                 csv = f'{dir_results}\\{algo}_{domain}.csv'
@@ -785,7 +813,7 @@ def grid_search(algo):
 # create_backward('rooms')
 # create_backward('games')
 # create_backward('cities')
-# union_results()
+#union_results()
 # best_results()
 # create_fe_raw('mazes')
 # create_fe_raw('random')
@@ -831,6 +859,10 @@ def grid_search(algo):
 # grid_search('forward')
 # grid_search('bi')
 # grid_search('backward')
-predict_bestgrid('forward')
-predict_bestgrid('bi')
-predict_bestgrid('backward')
+# predict_bestgrid('forward')
+# predict_bestgrid('bi')
+# predict_bestgrid('backward')
+#create_optimal('cities')
+#create_optimal('mazes')
+#create_optimal('random')
+#create_optimal('rooms')

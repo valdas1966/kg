@@ -51,14 +51,13 @@ class TestKAStarBackward:
     @staticmethod
     def __tester_expanded_nodes():
         grid = GridBlocks(rows=5)
-        grid.set_block(2, 3)
-        grid.set_block(4, 3)
-        start = Point(3, 2)
-        goals = {Point(1, 4), Point(4, 4)}
+        grid.set_block(0, 1)
+        grid.set_block(2, 1)
+        start = Point(1, 2)
+        goals = {Point(0, 0), Point(3, 0)}
         ka = KAStarBackward(grid, start, goals)
         ka.run()
         p0 = ka.expanded_nodes() == 6
-        print(ka.closed)
         u_tester.run(p0)
 
 

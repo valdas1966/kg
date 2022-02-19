@@ -8,18 +8,22 @@ import random
 import pandas as pd
 
 
-repo = 'd:\\temp\\write\\exp ka directions\\'
+#repo = 'd:\\temp\\write\\exp ka directions\\'
+repo = 'g:\\temp\\thesis\\exp ka directions\\'
+#repo = 'g:\\temp\\thesis\\exp ka directions 50 goals\\'
 pickle_problems = repo + 'problems.pickle'
 csv_results = repo + 'results.csv'
-csv_agg = repo + 'agg.csv'
+csv_opt_for = repo + 'opt_for.csv'
+csv_wins = repo + 'wins.csv'
+csv_expanded_nodes = repo + 'expanded_nodes.csv'
 
 
 def create_problems():
     problems = list()
     i = 0
-    while i < 100000:
+    while i < 500000:
         grid = GridBlocks(rows=10, percent_blocks=20)
-        cnt_goals = random.randint(2, 10)
+        cnt_goals = random.randint(2, 50)
         points = grid.points_random(amount=cnt_goals + 1)
         start = points[0]
         goals = points[1:]
@@ -55,10 +59,10 @@ def run():
         backward = ka_backward.expanded_nodes()
         oracle = min(forward, bi, backward)
         winner = 'Forward'
-        if oracle == bi:
-            winner = 'Bi'
-        elif oracle == backward:
+        if oracle == backward:
             winner = 'Backward'
+        elif oracle == bi:
+            winner = 'Bi'
         file.write(f'{i},{len(goals)},{forward},{bi},{backward},{oracle},'
                    f'{optimal},{winner}\n')
         if not i % 1000:
@@ -66,24 +70,65 @@ def run():
     file.close()
 
 
-def aggregate():
-        df = pd.read_csv(csv_results)
-        sql = SQLite()
-        sql.load(df, tname='temp')
-        query = """
+def agg_opt_for():
+    df_results = pd.read_csv(csv_results)
+    sql = SQLite()
+    sql.load(df=df_results, tname='results')
+    query = """
+                select
+                    goals,
+                    round(avg(cast(optimal as float)/forward),2) as opt_for
+                from
+                    results
+                group by 
+                    goals
+                order by 1
+            """
+    df_opt_for = sql.select(query)
+    df_opt_for.to_csv(csv_opt_for)
+
+
+def agg_wins():
+    df_results = pd.read_csv(csv_results)
+    sql = SQLite()
+    sql.load(df=df_results, tname='results')
+    query = """
+                    select
+                        winner,
+                        count(*) as cnt
+                    from
+                        results
+                    group by 
+                        winner
+                    order by 1
+                """
+    df_opt_for = sql.select(query)
+    df_opt_for.to_csv(csv_wins)
+
+
+def agg_expanded_nodes():
+    df_results = pd.read_csv(csv_results)
+    sql = SQLite()
+    sql.load(df=df_results, tname='results')
+    query = """
                     select
                         goals,
-                        round(avg(closed),0) as closed,
+                        round(avg(forward),0) as forward,
+                        round(avg(bi),0) as bi,
+                        round(avg(backward),0) as backward,
+                        round(avg(oracle),0) as oracle,
                         round(avg(optimal),0) as optimal
                     from
-                        temp
-                    group by
+                        results
+                    group by 
                         goals
                     order by 1
                 """
-        sql.select(query, verbose=True).to_csv(csv_agg)
-
+    df_opt_for = sql.select(query)
+    df_opt_for.to_csv(csv_expanded_nodes)
 
 # create_problems()
-run()
-# aggregate()
+# run()
+# agg_opt_for()
+# agg_wins()
+agg_expanded_nodes()
