@@ -17,7 +17,7 @@ from sklearn.model_selection import GridSearchCV
 
 dir_maps = 'd:\\temp\\maps\\'
 dir_storage = 'd:\\temp\\final\\'
-dir_storage = 'g:\\roni\\model\\'
+#dir_storage = 'g:\\roni\\model\\'
 dir_forward = dir_storage + 'Forward\\'
 pickle_grids = dir_storage + 'grids.pickle'
 pickle_grids_final = dir_storage + 'grids_final.pickle'
@@ -863,6 +863,7 @@ def grid_search(algo):
 # predict_bestgrid('bi')
 # predict_bestgrid('backward')
 #create_optimal('cities')
+create_optimal('games')
 #create_optimal('mazes')
 #create_optimal('random')
 #create_optimal('rooms')
