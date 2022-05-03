@@ -3,7 +3,6 @@ from f_ds import u_df
 from f_ds import u_rfr
 
 
-
 repo = 'D:\\Temp\\write\\220228\\Bi\\'
 csv_train = repo + 'train.csv'
 csv_test = repo + 'test.csv'
