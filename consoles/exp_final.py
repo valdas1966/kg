@@ -9,8 +9,8 @@ from logic import u_grid
 from logic import u_points
 from f_utils import u_file
 from f_utils import u_pickle
-from f_ds import u_df
-from f_ds import u_rfr
+from f_data_science import u_df
+from f_data_science import u_rfr
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 
