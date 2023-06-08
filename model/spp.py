@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from point import Point
+from grid_blocks import GridBlocks
 
 
 @dataclass
-class Problem:
+class SPP:
     domain: str
     map: str
+    grid: GridBlocks
     start: Point
-    goals: set  # of Points
-
-
+    goal: set

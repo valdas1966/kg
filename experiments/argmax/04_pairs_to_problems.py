@@ -1,7 +1,7 @@
 import pandas as pd
 import random
 from model.point import Point
-from model.problem import Problem
+from model.spp import Problem
 import logic.u_grid_blocks as logic
 import config
 

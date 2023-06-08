@@ -28,22 +28,4 @@ f.close()
 
 df = pd.read_csv(csv_pairs)
 
-sql = SQLite()
-
-sql.load(tname='temp_1', df=df)
-
-query = """
-            select
-                domain,
-                map,
-                distance, 
-                count(*) as cnt
-            from
-                temp_1
-            group by
-                domain,
-                map,
-                distance
-        """
-
 sql.select(query=query).to_csv(csv_stat)
