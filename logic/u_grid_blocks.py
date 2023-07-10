@@ -77,7 +77,6 @@ def random_points_radius(grid, point, radius, amount):
      Return: list of Point.
     ============================================================================
     """
-    assert type(grid) == GridBlocks
     assert type(point) == Point
     assert type(radius) == int
     assert type(amount) == int
@@ -231,4 +230,5 @@ def from_map(path, char_valid='.', rows_pass=4):
     ndarray = np.array(rows)
     grid = GridBlocks(rows=ndarray.shape[0], cols=ndarray.shape[1])
     grid.ndarray = ndarray
+    grid.map = path
     return grid

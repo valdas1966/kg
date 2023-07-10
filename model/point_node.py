@@ -68,7 +68,7 @@ class Node(Point):
             self.g = g_cand
             self.set_f()
 
-    def set_h(self, true_distance=None):
+    def set_h(self, true_distance=None, min_distance=None):
         """
         ========================================================================
          Description: Set Heuristic (Manhattan Distance) to the Goal.
@@ -76,6 +76,8 @@ class Node(Point):
         """
         if true_distance:
             self.h = true_distance
+        elif min_distance:
+            self.h = max(min_distance, self.distance(self.goal))
         else:
             self.h = self.distance(self.goal)
         self.set_f()

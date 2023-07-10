@@ -2,6 +2,9 @@ from model.grid_blocks import GridBlocks
 import numpy as np
 
 
+cache = dict()
+
+
 class GridDomainMap(GridBlocks):
 
     ROWS_PASSED = 4
@@ -10,14 +13,13 @@ class GridDomainMap(GridBlocks):
     def __init__(self,
                  domain: str,
                  map: str,
-                 path: str):
+                 path: str) -> None:
         self.domain = domain
         self.map = map
         self.path = path
-        array = self.__get_array()
-        super().__init__(rows=array.shape[0],
-                         cols=array.shape[1])
-        self.ndarray = array
+        self.ndarray = self.__get_array()
+        super().__init__(rows=self.ndarray.shape[0],
+                         cols=self.ndarray.shape[1])
 
     def __get_array(self) -> np.array:
         rows = list()

@@ -30,6 +30,7 @@ class AStar:
         assert grid.is_valid_point(goal)
         self.start = start
         self.goal = goal
+        self.name = f'{self.start.name}_{self.goal.name}'
         self.grid = grid
         self.is_found = False
         self.best = None

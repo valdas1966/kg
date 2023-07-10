@@ -3,7 +3,7 @@ import math
 
 class Point:
 
-    def __init__(self, x, y=None):
+    def __init__(self, x, y=None, name: str = None):
         if type(x) == Point:
             x = x.x
             y = x.y
@@ -11,6 +11,7 @@ class Point:
         assert type(y) == int
         self.x = x
         self.y = y
+        self.name = name
 
     def distance(self, other):
         """

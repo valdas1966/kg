@@ -1,6 +1,7 @@
 from model.grid import Grid
 from model.point import Point
 import random
+import hashlib
 
 
 class GridBlocks(Grid):
@@ -24,6 +25,11 @@ class GridBlocks(Grid):
         super().__init__(rows, cols)
         self.percent_blocks = percent_blocks
         self.__set_random_blocks()
+        self.map = str()
+
+    def __hash__(self) -> str:
+        hash_object = hashlib.sha256(self.map.encode())
+        return int(hash_object.hexdigest(), 16)
 
     def set_block(self, x, y=None):
         """
@@ -157,6 +163,8 @@ class GridBlocks(Grid):
         ========================================================================
         """
         return set(super().points()) - set(self.points())
+
+
 
     def draw_excel(self, xl_map, row_start, col_start, title=str(),
                    with_numbers=False):
