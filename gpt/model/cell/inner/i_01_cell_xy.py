@@ -14,18 +14,40 @@ class CellXY:
     """
 
     def __init__(self,
-                 x: int,              # Cell's X-Coordinate
-                 y: int,              # Cell's Y-Coordinate
-                 name: str = None     # Optional Name for the Cell
+                 x: int,                       # Cell's X-Coordinate
+                 y: int,                       # Cell's Y-Coordinate
+                 name: str = None,             # Optional Name for the Cell
+                 is_traversable: bool = True   # Non-Obstacle
                  ) -> None:
         """
         ========================================================================
          Desc: Init the Cell with its Position (X,Y) and an optional Name.
         ========================================================================
         """
-        self.x = x
-        self.y = y
-        self.name = name
+        self._x = x
+        self._y = y
+        self._name = name
+        self._is_traversable = is_traversable
+
+    @property
+    def x(self) -> int:
+        return self._x
+
+    @property
+    def y(self) -> int:
+        return self._y
+
+    @property
+    def is_traversable(self) -> bool:
+        return self._is_traversable
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, value) -> None:
+        self._name = value
 
     def __str__(self) -> str:
         """

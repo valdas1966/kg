@@ -6,7 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../mypy" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/../mypy" />
-    <orderEntry type="jdk" jdkName="Python 3.10 (mypy)" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
