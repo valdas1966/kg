@@ -217,8 +217,8 @@ kastar.run()
 
 backwards = u_pickle.load(pickle_backward)
 astars = backwards[47][95]
-for astar in astars:
-    print(astar.start, astar.goal, astar.closed)
+for a_star in astars:
+    print(a_star.start, a_star.goal, a_star.closed)
 li_start_goals = u_pickle.load(pickle_start_goals)
 print(li_start_goals[47][95])
 """
